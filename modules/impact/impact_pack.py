@@ -226,6 +226,10 @@ class DetailerForEach:
     CATEGORY = "ImpactPack/Detailer"
 
     @staticmethod
+    def get_core_module():
+        return core
+
+    @staticmethod
     def do_detail(image, segs, model, clip, vae, guide_size, guide_size_for_bbox, max_size, seed, steps, cfg, sampler_name, scheduler,
                   positive, negative, denoise, feather, noise_mask, force_inpaint, wildcard_opt=None, detailer_hook=None,
                   refiner_ratio=None, refiner_model=None, refiner_clip=None, refiner_positive=None, refiner_negative=None,
