@@ -373,7 +373,7 @@ class ImageListToImageBatch:
 
     def doit(self, images):
         if len(images) <= 1:
-            return (images,)
+            return (images[0],)
         else:
             image1 = images[0]
             for image2 in images[1:]:
