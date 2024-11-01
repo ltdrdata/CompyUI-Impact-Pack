@@ -1,10 +1,12 @@
 import os
+import re
 import shutil
 import sys
 import subprocess
 import threading
 import locale
 import traceback
+from typing import Set
 
 
 if sys.argv[0] == 'install.py':
@@ -66,6 +68,41 @@ def process_wrap(cmd_str, cwd=None, handler=None, env=None):
     stderr_thread.join()
 
     return process.wait()
+
+
+def get_installed_packages() -> Set[str]:
+    try:
+        result = subprocess.check_output([sys.executable, '-m', 'pip', 'list'], universal_newlines=True)
+        pip_list = set([line.split()[0].lower() for line in result.split('\n') if line.strip()])
+        return pip_list
+    except subprocess.CalledProcessError as e:
+        raise Exception(f"[ComfyUI-Impact-Pack] Failed to retrieve the information of installed pip packages.")
+
+
+def is_package_installed(name: str) -> bool:
+    name = name.strip()
+    pattern = r'([^<>!=]+)([<>!=]=?)'
+    match = re.search(pattern, name)
+    
+    if match:
+        name = match.group(1)
+        
+    result = name.lower() in get_installed_packages()
+    return result
+
+
+def is_requirements_installed(file_path: str) -> bool:
+    print(f"Requirements file: {file_path}")
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            lines = file.readlines()
+
+        for line in lines:
+            if not is_package_installed(line):
+                return False
+
+pip_install = [sys.executable, "-m", "pip", "install", "-U"]
+
 # ---
 
 
