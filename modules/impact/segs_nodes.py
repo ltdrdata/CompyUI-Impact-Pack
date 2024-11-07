@@ -896,7 +896,7 @@ class From_SEG_ELT_bbox:
     CATEGORY = "ImpactPack/Util"
 
     def doit(self, bbox):
-        return bbox
+        return [int(c) for c in bbox]
 
 
 class From_SEG_ELT_crop_region:
@@ -1101,10 +1101,10 @@ class SEG_ELT_BBOX_ScaleBy:
         x1, y1, x2, y2 = x1-cx1, y1-cy1, x2-cx1, y2-cy1
         h, w = mask.shape
 
-        x1 = min(w-1, max(0, x1))
-        x2 = min(w-1, max(0, x2))
-        y1 = min(h-1, max(0, y1))
-        y2 = min(h-1, max(0, y2))
+        x1 = int(min(w-1, max(0, x1)))
+        x2 = int(min(w-1, max(0, x2)))
+        y1 = int(min(h-1, max(0, y1)))
+        y2 = int(min(h-1, max(0, y2)))
 
         mask_cropped = mask.copy()
         mask_cropped[:, :x1] = 0  # zero fill left side
