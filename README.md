@@ -286,6 +286,7 @@ This custom node helps to conveniently enhance images through Detector, Detailer
   * `Negative Cond Placeholder` - Models like FLUX.1 do not use Negative Conditioning. This is a placeholder node for them. You can use FLUX.1 by replacing the Negative Conditioning used in Impact KSampler, KSampler (Inspire), and Detailer with this node.
   * `Execution Order Controller` - A helper node that can forcibly control the execution order of nodes.
     * Connect the output of the node that should be executed first to the signal, and make the input of the node that should be executed later pass through this node.
+  * `List Bridge` - When passing the list output through this node, it collects and organizes the data before forwarding it, which ensures that the previous stage's sub-workflow has been completed.
 
 
 ## MMDet nodes (DEPRECATED) - Don't use these nodes

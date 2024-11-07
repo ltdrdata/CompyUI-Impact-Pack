@@ -273,6 +273,7 @@ NODE_CLASS_MAPPINGS = {
     "StringListToString": StringListToString,
     "WildcardPromptFromString": WildcardPromptFromString,
     "ImpactExecutionOrderController": ImpactExecutionOrderController,
+    "ImpactListBridge": ImpactListBridge,
 
     "RemoveNoiseMask": RemoveNoiseMask,
 
@@ -393,6 +394,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ImpactSwitch": "Switch (Any)",
     "ImpactInversedSwitch": "Inversed Switch (Any)",
     "ImpactExecutionOrderController": "Execution Order Controller",
+    "ImpactListBridge": "List Bridge",
 
     "MasksToMaskList": "Mask Batch to Mask List",
     "MaskListToMaskBatch": "Mask List to Mask Batch",
