@@ -76,7 +76,7 @@ def set_previewbridge_image(node_id, file, item):
         if 'A' in i.getbands():
             mask = np.array(i.getchannel('A')).astype(np.float32) / 255.0
             mask = 1. - torch.from_numpy(mask)
-            preview_bridge_last_mask_cache[node_id] = mask
+            preview_bridge_last_mask_cache[node_id] = mask.unsqueeze(0)
     pb_id_cnt += 1
 
     return pb_id
