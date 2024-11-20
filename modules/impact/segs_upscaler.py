@@ -106,7 +106,12 @@ def img2img_segs(image, model, clip, vae, seed, steps, cfg, sampler_name, schedu
 
     # prepare mask
     if noise_mask is not None and inpaint_model:
-        positive, negative, latent_image = nodes.InpaintModelConditioning().encode(positive, negative, image, vae, noise_mask)
+        imc_encode = nodes.InpaintModelConditioning().encode
+        if 'noise_mask' in inspect.signature(imc_encode).parameters:
+            positive, negative, latent_image = imc_encode(positive, negative, image, vae, mask=noise_mask, noise_mask=True)
+        else:
+            print(f"[Impact Pack] ComfyUI is an outdated version.")
+            positive, negative, latent_image = imc_encode(positive, negative, image, vae, noise_mask)
     else:
         latent_image = to_latent_image(image, vae)
         if noise_mask is not None:
