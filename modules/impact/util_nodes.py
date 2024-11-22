@@ -501,7 +501,7 @@ class MakeMaskBatch:
     def doit(self, **kwargs):
         mask1 = kwargs['mask1']
         del kwargs['mask1']
-        masks = [utils.make_3d_mask(value) for value in kwargs.values()]
+        masks = [make_3d_mask(value) for value in kwargs.values()]
 
         if len(masks) == 0:
             return (mask1,)
