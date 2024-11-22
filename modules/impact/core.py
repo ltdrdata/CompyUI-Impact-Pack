@@ -11,6 +11,7 @@ from impact.utils import *
 from collections import namedtuple
 import numpy as np
 from skimage.measure import label
+from PIL import ImageOps
 
 import nodes
 import comfy_extras.nodes_upscale_model as model_upscale
@@ -69,6 +70,13 @@ def set_previewbridge_image(node_id, file, item):
     pb_id = f"${node_id}-{pb_id_cnt}"
     preview_bridge_image_id_map[pb_id] = (file, item)
     preview_bridge_image_name_map[node_id, file] = (pb_id, item)
+    if os.path.isfile(file):
+        i = Image.open(file)
+        i = ImageOps.exif_transpose(i)
+        if 'A' in i.getbands():
+            mask = np.array(i.getchannel('A')).astype(np.float32) / 255.0
+            mask = 1. - torch.from_numpy(mask)
+            preview_bridge_last_mask_cache[node_id] = mask.unsqueeze(0)
     pb_id_cnt += 1
 
     return pb_id
