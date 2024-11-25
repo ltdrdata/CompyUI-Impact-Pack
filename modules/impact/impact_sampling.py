@@ -27,6 +27,8 @@ def calculate_sigmas(model, sampler, scheduler, steps):
         sigmas = nodes.NODE_CLASS_MAPPINGS['AlignYourStepsScheduler']().get_sigmas(scheduler[4:], steps, denoise=1.0)[0]
     elif scheduler.startswith('GITS[coeff='):
         sigmas = nodes.NODE_CLASS_MAPPINGS['GITSScheduler']().get_sigmas(float(scheduler[11:-1]), steps, denoise=1.0)[0]
+    elif scheduler == 'LTXV[default]':
+        sigmas = nodes.NODE_CLASS_MAPPINGS['LTXVScheduler']().get_sigmas(20, 2.05, 0.95, True, 0.1)[0]
     else:
         sigmas = samplers.calculate_sigmas(model.get_model_object("model_sampling"), scheduler, steps)
 
