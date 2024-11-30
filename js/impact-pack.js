@@ -667,11 +667,18 @@ app.registerExtension({
 					break;
 			}
 
-			node.widgets[combo_id+1].callback = (value, canvas, node, pos, e) => {
-				if(node.widgets[tbox_id].value != '')
-					node.widgets[tbox_id].value += ', '
+			const { onWidgetChanged } = node
+			node.onWidgetChanged = function (widgetName, value, oldValue, widget) {
+				const result = onWidgetChanged?.apply(this, arguments)
 
-				node.widgets[tbox_id].value += value;
+				if (value != "Select the Wildcard to add to the text") {
+						if(node.widgets[tbox_id].value != '')
+						node.widgets[tbox_id].value += ', '
+
+					node.widgets[tbox_id].value += value;
+				}
+
+				return result
 			}
 
 			Object.defineProperty(node.widgets[combo_id+1], "value", {
@@ -686,22 +693,23 @@ app.registerExtension({
 				}
 			});
 
-			node.widgets[combo_id].callback = (value, canvas, node, pos, e) => {
-				let lora_name = value;
-				if(lora_name.endsWith('.safetensors')) {
-					lora_name = lora_name.slice(0, -12);
-				}
-
-				node.widgets[tbox_id].value += `<lora:${lora_name}>`;
-				if(node.widgets_values) {
-					node.widgets_values[tbox_id] = node.widgets[tbox_id].value;
-				}
-			}
-
 			if(has_lora) {
+				node.widgets[combo_id].callback = (value, canvas, node, pos, e) => {
+					let lora_name = node._value;
+					if(lora_name.endsWith('.safetensors')) {
+						lora_name = lora_name.slice(0, -12);
+					}
+
+					node.widgets[tbox_id].value += `<lora:${lora_name}>`;
+					if(node.widgets_values) {
+						node.widgets_values[tbox_id] = node.widgets[tbox_id].value;
+					}
+				}
+
 				Object.defineProperty(node.widgets[combo_id], "value", {
 					set: (value) => {
-							node._value = value;
+							if (value !== "Select the LoRA to add to the text")
+								node._value = value;
 						},
 
 					get: () => { return "Select the LoRA to add to the text"; }
