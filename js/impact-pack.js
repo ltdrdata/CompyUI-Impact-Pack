@@ -688,7 +688,7 @@ app.registerExtension({
 
 			node.widgets[combo_id].callback = (value, canvas, node, pos, e) => {
 				let lora_name = value;
-				if (lora_name.endsWith('.safetensors')) {
+				if(lora_name.endsWith('.safetensors')) {
 					lora_name = lora_name.slice(0, -12);
 				}
 
