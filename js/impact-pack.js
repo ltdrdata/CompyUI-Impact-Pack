@@ -587,17 +587,17 @@ app.registerExtension({
 		}
 
 		if(node.comfyClass == "ImpactSEGSLabelFilter" || node.comfyClass == "SEGSLabelFilterDetailerHookProvider") {
+			node.widgets[0].callback = (value, canvas, node, pos, e) => {
+				if(node.widgets[1].value.trim() != "" && !node.widgets[1].value.trim().endsWith(","))
+					node.widgets[1].value += ", "
+
+				node.widgets[1].value += value;
+				if(node.widgets_values)
+					node.widgets_values[1] = node.widgets[1].value;
+			}
+
 			Object.defineProperty(node.widgets[0], "value", {
 				set: (value) => {
-						const stackTrace = new Error().stack;
-						if(stackTrace.includes('inner_value_change')) {
-							if(node.widgets[1].value.trim() != "" && !node.widgets[1].value.trim().endsWith(","))
-								node.widgets[1].value += ", "
-
-							node.widgets[1].value += value;
-							node.widgets_values[1] = node.widgets[1].value;
-						}
-
 						node._value = value;
 					},
 				get: () => {
@@ -667,18 +667,15 @@ app.registerExtension({
 					break;
 			}
 
-			Object.defineProperty(node.widgets[combo_id+1], "value", {
-				set: (value) => {
-						const stackTrace = new Error().stack;
-						if(stackTrace.includes('inner_value_change')) {
-							if(value != "Select the Wildcard to add to the text") {
-								if(node.widgets[tbox_id].value != '')
-									node.widgets[tbox_id].value += ', '
+			node.widgets[combo_id+1].callback = (value, canvas, node, pos, e) => {
+				if(node.widgets[tbox_id].value != '')
+					node.widgets[tbox_id].value += ', '
 
-								node.widgets[tbox_id].value += value;
-							}
-						}
-					},
+				node.widgets[tbox_id].value += value;
+			}
+
+			Object.defineProperty(node.widgets[combo_id+1], "value", {
+				set: (value) => {},
 				get: () => { return "Select the Wildcard to add to the text"; }
 			});
 
@@ -689,24 +686,21 @@ app.registerExtension({
 				}
 			});
 
+			node.widgets[combo_id].callback = (value, canvas, node, pos, e) => {
+				let lora_name = value;
+				if (lora_name.endsWith('.safetensors')) {
+					lora_name = lora_name.slice(0, -12);
+				}
+
+				node.widgets[tbox_id].value += `<lora:${lora_name}>`;
+				if(node.widgets_values) {
+					node.widgets_values[tbox_id] = node.widgets[tbox_id].value;
+				}
+			}
+
 			if(has_lora) {
 				Object.defineProperty(node.widgets[combo_id], "value", {
 					set: (value) => {
-							const stackTrace = new Error().stack;
-							if(stackTrace.includes('inner_value_change')) {
-								if(value != "Select the LoRA to add to the text") {
-									let lora_name = value;
-									if (lora_name.endsWith('.safetensors')) {
-										lora_name = lora_name.slice(0, -12);
-									}
-
-									node.widgets[tbox_id].value += `<lora:${lora_name}>`;
-									if(node.widgets_values) {
-										node.widgets_values[tbox_id] = node.widgets[tbox_id].value;
-									}
-								}
-							}
-
 							node._value = value;
 						},
 
