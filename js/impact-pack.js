@@ -667,22 +667,18 @@ app.registerExtension({
 					break;
 			}
 
-			const { onWidgetChanged } = node
-			node.onWidgetChanged = function (widgetName, value, oldValue, widget) {
-				const result = onWidgetChanged?.apply(this, arguments)
+            node.widgets[combo_id+1].callback = (value, canvas, node, pos, e) => {
+                    if(node.widgets[tbox_id].value != '')
+                        node.widgets[tbox_id].value += ', '
 
-				if (value != "Select the Wildcard to add to the text") {
-						if(node.widgets[tbox_id].value != '')
-						node.widgets[tbox_id].value += ', '
-
-					node.widgets[tbox_id].value += value;
-				}
-
-				return result
-			}
+                    node.widgets[tbox_id].value += node._wildcard_value;
+            }
 
 			Object.defineProperty(node.widgets[combo_id+1], "value", {
-				set: (value) => {},
+				set: (value) => {
+                    if (value !== "Select the Wildcard to add to the text")
+                        node._wildcard_value = value;
+                },
 				get: () => { return "Select the Wildcard to add to the text"; }
 			});
 
