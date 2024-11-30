@@ -2027,7 +2027,12 @@ class LatentSender(nodes.SaveLatent):
                              "samples": ("LATENT", ),
                              "filename_prefix": ("STRING", {"default": "latents/LatentSender"}),
                              "link_id": ("INT", {"default": 0, "min": 0, "max": sys.maxsize, "step": 1}),
-                             "preview_method": (["Latent2RGB-SDXL", "Latent2RGB-SD15", "TAESDXL", "TAESD15"],)
+                             "preview_method": (["Latent2RGB-FLUX.1",
+                                                 "Latent2RGB-SDXL", "Latent2RGB-SD15", "Latent2RGB-SD3",
+                                                 "Latent2RGB-SD-X4", "Latent2RGB-Playground-2.5",
+                                                 "Latent2RGB-SC-Prior", "Latent2RGB-SC-B",
+                                                 "Latent2RGB-LTXV",
+                                                 "TAEF1", "TAESDXL", "TAESD15", "TAESD3"],)
                              },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
                 }
@@ -2069,14 +2074,33 @@ class LatentSender(nodes.SaveLatent):
         if preview_method == "Latent2RGB-SD15":
             latent_format = latent_formats.SD15()
             method = LatentPreviewMethod.Latent2RGB
-        elif preview_method == "TAESD15":
+        elif preview_method == "Latent2RGB-SDXL":
+            latent_format = latent_formats.SDXL()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-SD3":
+            latent_format = latent_formats.SD3()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-SD-X4":
+            latent_format = latent_formats.SD_X4()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-Playground-2.5":
+            latent_format = latent_formats.SDXL_Playground_2_5()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-SC-Prior":
+            latent_format = latent_formats.SC_Prior()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-SC-B":
+            latent_format = latent_formats.SC_B()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-FLUX.1":
+            latent_format = latent_formats.Flux()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-LTXV":
+            latent_format = latent_formats.LTXV()
+            method = LatentPreviewMethod.Latent2RGB
+        else:
+            print(f"[Impact Pack] LatentSender: '{preview_method}' is unsupported preview method.")
             latent_format = latent_formats.SD15()
-            method = LatentPreviewMethod.TAESD
-        elif preview_method == "TAESDXL":
-            latent_format = latent_formats.SDXL()
-            method = LatentPreviewMethod.TAESD
-        else:  # preview_method == "Latent2RGB-SDXL"
-            latent_format = latent_formats.SDXL()
             method = LatentPreviewMethod.Latent2RGB
 
         previewer = core.get_previewer("cpu", latent_format=latent_format, force=True, method=method)
