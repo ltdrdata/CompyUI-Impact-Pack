@@ -262,7 +262,7 @@ class ImpactSamEditorDialog extends ComfyDialog {
 			const pointsCanvas = document.createElement('canvas');
 
 			imgCanvas.id = "imageCanvas";
-			maskCanvas.id = "maskCanvas";
+			maskCanvas.id = "samEditorMaskCanvas";
 			pointsCanvas.id = "pointsCanvas";
 
 			this.setlayout(imgCanvas, maskCanvas, pointsCanvas);
@@ -349,20 +349,20 @@ class ImpactSamEditorDialog extends ComfyDialog {
 				drawHeight = imgCanvas.height;
 				drawWidth = (drawHeight / orig_image.height) * orig_image.width;
 			}
+			imgCanvas.width = drawWidth;
+			imgCanvas.height = drawHeight;
 
 			imgCtx.drawImage(orig_image, 0, 0, drawWidth, drawHeight);
 
 			// update mask
-			let w = (drawWidth * imgCanvas.clientWidth/imgCanvas.width) + "px";
-			let h = (drawHeight * imgCanvas.clientHeight/imgCanvas.height) + "px";
 
-			pointsCanvas.width = drawWidth;
-			pointsCanvas.height = drawHeight;
+			pointsCanvas.width = imgCanvas.clientWidth;
+			pointsCanvas.height = imgCanvas.clientHeight;
 			pointsCanvas.style.top = imgCanvas.offsetTop + "px";
 			pointsCanvas.style.left = imgCanvas.offsetLeft + "px";
 
-			maskCanvas.style.width = w;
-			maskCanvas.style.height = h;
+			maskCanvas.width = imgCanvas.clientWidth;
+			maskCanvas.height = imgCanvas.clientHeight;
 			maskCanvas.style.top = imgCanvas.offsetTop + "px";
 			maskCanvas.style.left = imgCanvas.offsetLeft + "px";
 
