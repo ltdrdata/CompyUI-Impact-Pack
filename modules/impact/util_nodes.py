@@ -52,7 +52,10 @@ class GeneralSwitch:
 
         print(f"SELECTED: {input_name}")
 
-        return [input_name]
+        if input_name in kwargs:
+            return [input_name]
+        else:
+            return []
 
     @staticmethod
     def doit(*args, **kwargs):
