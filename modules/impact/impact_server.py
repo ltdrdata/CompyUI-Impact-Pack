@@ -315,6 +315,8 @@ def onprompt_for_switch(json_data):
     inversed_switch_info = {}
     onprompt_switch_info = {}
     onprompt_cond_branch_info = {}
+    disabled_switch = set()
+
 
     for k, v in json_data['prompt'].items():
         if 'class_type' not in v:
@@ -348,6 +350,10 @@ def onprompt_for_switch(json_data):
                 else:
                     onprompt_switch_info[k] = select_input
 
+                if k in onprompt_switch_info and f'input{onprompt_switch_info[k]}' not in v['inputs']:
+                    # disconnect output
+                    disabled_switch.add(k)
+
         elif cls == 'ImpactConditionalBranchSelMode':
             if 'sel_mode' in v['inputs'] and v['inputs']['sel_mode'] and 'cond' in v['inputs']:
                 cond_input = v['inputs']['cond']
@@ -371,6 +377,9 @@ def onprompt_for_switch(json_data):
                 if vv[0] in inversed_switch_info:
                     if vv[1] + 1 != inversed_switch_info[vv[0]]:
                         disable_targets.add(kk)
+
+                if vv[0] in disabled_switch:
+                    disable_targets.add(kk)
 
         if k in onprompt_switch_info:
             selected_slot_name = f"input{onprompt_switch_info[k]}"

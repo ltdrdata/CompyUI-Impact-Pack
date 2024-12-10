@@ -65,13 +65,6 @@ class GeneralSwitch:
         selected_label = input_name
         node_id = kwargs['unique_id']
 
-        if input_name not in kwargs:
-            if core.is_execution_model_version_supported():
-                from comfy_execution.graph import ExecutionBlocker
-                return ExecutionBlocker(None), selected_label, selected_index
-            else:
-                print("[Impact Pack] ImpactSwitch: ComfyUI is outdated. Cannot block empty selection.")
-
         if 'extra_pnginfo' in kwargs and kwargs['extra_pnginfo'] is not None:
             nodelist = kwargs['extra_pnginfo']['workflow']['nodes']
             for node in nodelist:
