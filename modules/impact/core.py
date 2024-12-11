@@ -11,6 +11,7 @@ from impact.utils import *
 from collections import namedtuple
 import numpy as np
 from skimage.measure import label
+from PIL import ImageOps
 
 import nodes
 import comfy_extras.nodes_upscale_model as model_upscale
@@ -47,7 +48,7 @@ preview_bridge_last_mask_cache = {}
 
 current_prompt = None
 
-SCHEDULERS = comfy.samplers.KSampler.SCHEDULERS + ['AYS SDXL', 'AYS SD1', 'AYS SVD', 'GITS[coeff=1.2]']
+SCHEDULERS = comfy.samplers.KSampler.SCHEDULERS + ['AYS SDXL', 'AYS SD1', 'AYS SVD', 'GITS[coeff=1.2]', 'LTXV[default]']
 
 
 def is_execution_model_version_supported():
@@ -69,6 +70,13 @@ def set_previewbridge_image(node_id, file, item):
     pb_id = f"${node_id}-{pb_id_cnt}"
     preview_bridge_image_id_map[pb_id] = (file, item)
     preview_bridge_image_name_map[node_id, file] = (pb_id, item)
+    if os.path.isfile(file):
+        i = Image.open(file)
+        i = ImageOps.exif_transpose(i)
+        if 'A' in i.getbands():
+            mask = np.array(i.getchannel('A')).astype(np.float32) / 255.0
+            mask = 1. - torch.from_numpy(mask)
+            preview_bridge_last_mask_cache[node_id] = mask.unsqueeze(0)
     pb_id_cnt += 1
 
     return pb_id
@@ -319,7 +327,12 @@ def enhance_detail(image, model, clip, vae, guide_size, guide_size_for_bbox, max
 
     # prepare mask
     if noise_mask is not None and inpaint_model:
-        positive, negative, latent_image = nodes.InpaintModelConditioning().encode(positive, negative, upscaled_image, vae, noise_mask)
+        imc_encode = nodes.InpaintModelConditioning().encode
+        if 'noise_mask' in inspect.signature(imc_encode).parameters:
+            positive, negative, latent_image = imc_encode(positive, negative, upscaled_image, vae, mask=noise_mask, noise_mask=True)
+        else:
+            print(f"[Impact Pack] ComfyUI is an outdated version.")
+            positive, negative, latent_image = imc_encode(positive, negative, upscaled_image, vae, noise_mask)
     else:
         latent_image = to_latent_image(upscaled_image, vae)
         if noise_mask is not None:
@@ -1354,9 +1367,14 @@ def segs_to_masklist(segs):
     return masks
 
 
-def vae_decode(vae, samples, use_tile, hook, tile_size=512):
+def vae_decode(vae, samples, use_tile, hook, tile_size=512, overlap=64):
     if use_tile:
-        pixels = nodes.VAEDecodeTiled().decode(vae, samples, tile_size)[0]
+        decoder = nodes.VAEDecodeTiled()
+        if 'overlap' in inspect.signature(decoder.decode).parameters:
+            pixels = decoder.decode(vae, samples, tile_size, overlap=overlap)[0]
+        else:
+            print(f"[Impact Pack] Your ComfyUI is outdated.")
+            pixels = decoder.decode(vae, samples, tile_size)[0]
     else:
         pixels = nodes.VAEDecode().decode(vae, samples)[0]
 
@@ -1378,12 +1396,12 @@ def vae_encode(vae, pixels, use_tile, hook, tile_size=512):
     return samples
 
 
-def latent_upscale_on_pixel_space_shape(samples, scale_method, w, h, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None):
-    return latent_upscale_on_pixel_space_shape2(samples, scale_method, w, h, vae, use_tile, tile_size, save_temp_prefix, hook)[0]
+def latent_upscale_on_pixel_space_shape(samples, scale_method, w, h, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None, overlap=64):
+    return latent_upscale_on_pixel_space_shape2(samples, scale_method, w, h, vae, use_tile, tile_size, save_temp_prefix, hook, overlap=overlap)[0]
 
 
-def latent_upscale_on_pixel_space_shape2(samples, scale_method, w, h, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None):
-    pixels = vae_decode(vae, samples, use_tile, hook, tile_size=tile_size)
+def latent_upscale_on_pixel_space_shape2(samples, scale_method, w, h, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None, overlap=64):
+    pixels = vae_decode(vae, samples, use_tile, hook, tile_size=tile_size, overlap=overlap)
 
     if save_temp_prefix is not None:
         nodes.PreviewImage().save_images(pixels, filename_prefix=save_temp_prefix)
@@ -1397,12 +1415,12 @@ def latent_upscale_on_pixel_space_shape2(samples, scale_method, w, h, vae, use_t
     return (vae_encode(vae, pixels, use_tile, hook, tile_size=tile_size), old_pixels)
 
 
-def latent_upscale_on_pixel_space(samples, scale_method, scale_factor, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None):
-    return latent_upscale_on_pixel_space2(samples, scale_method, scale_factor, vae, use_tile, tile_size, save_temp_prefix, hook)[0]
+def latent_upscale_on_pixel_space(samples, scale_method, scale_factor, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None, overlap=64):
+    return latent_upscale_on_pixel_space2(samples, scale_method, scale_factor, vae, use_tile, tile_size, save_temp_prefix, hook, overlap=overlap)[0]
 
 
-def latent_upscale_on_pixel_space2(samples, scale_method, scale_factor, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None):
-    pixels = vae_decode(vae, samples, use_tile, hook, tile_size=tile_size)
+def latent_upscale_on_pixel_space2(samples, scale_method, scale_factor, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None, overlap=64):
+    pixels = vae_decode(vae, samples, use_tile, hook, tile_size=tile_size, overlap=overlap)
 
     if save_temp_prefix is not None:
         nodes.PreviewImage().save_images(pixels, filename_prefix=save_temp_prefix)
@@ -1418,12 +1436,12 @@ def latent_upscale_on_pixel_space2(samples, scale_method, scale_factor, vae, use
     return (vae_encode(vae, pixels, use_tile, hook, tile_size=tile_size), old_pixels)
 
 
-def latent_upscale_on_pixel_space_with_model_shape(samples, scale_method, upscale_model, new_w, new_h, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None):
-    return latent_upscale_on_pixel_space_with_model_shape2(samples, scale_method, upscale_model, new_w, new_h, vae, use_tile, tile_size, save_temp_prefix, hook)[0]
+def latent_upscale_on_pixel_space_with_model_shape(samples, scale_method, upscale_model, new_w, new_h, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None, overlap=64):
+    return latent_upscale_on_pixel_space_with_model_shape2(samples, scale_method, upscale_model, new_w, new_h, vae, use_tile, tile_size, save_temp_prefix, hook, overlap=overlap)[0]
 
 
-def latent_upscale_on_pixel_space_with_model_shape2(samples, scale_method, upscale_model, new_w, new_h, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None):
-    pixels = vae_decode(vae, samples, use_tile, hook, tile_size=tile_size)
+def latent_upscale_on_pixel_space_with_model_shape2(samples, scale_method, upscale_model, new_w, new_h, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None, overlap=64):
+    pixels = vae_decode(vae, samples, use_tile, hook, tile_size=tile_size, overlap=overlap)
 
     if save_temp_prefix is not None:
         nodes.PreviewImage().save_images(pixels, filename_prefix=save_temp_prefix)
@@ -1450,12 +1468,12 @@ def latent_upscale_on_pixel_space_with_model_shape2(samples, scale_method, upsca
 
 
 def latent_upscale_on_pixel_space_with_model(samples, scale_method, upscale_model, scale_factor, vae, use_tile=False,
-                                             tile_size=512, save_temp_prefix=None, hook=None):
-    return latent_upscale_on_pixel_space_with_model2(samples, scale_method, upscale_model, scale_factor, vae, use_tile, tile_size, save_temp_prefix, hook)[0]
+                                             tile_size=512, save_temp_prefix=None, hook=None, overlap=64):
+    return latent_upscale_on_pixel_space_with_model2(samples, scale_method, upscale_model, scale_factor, vae, use_tile, tile_size, save_temp_prefix, hook, overlap=overlap)[0]
 
 def latent_upscale_on_pixel_space_with_model2(samples, scale_method, upscale_model, scale_factor, vae, use_tile=False,
-                                              tile_size=512, save_temp_prefix=None, hook=None):
-    pixels = vae_decode(vae, samples, use_tile, hook, tile_size=tile_size)
+                                              tile_size=512, save_temp_prefix=None, hook=None, overlap=64):
+    pixels = vae_decode(vae, samples, use_tile, hook, tile_size=tile_size, overlap=overlap)
 
     if save_temp_prefix is not None:
         nodes.PreviewImage().save_images(pixels, filename_prefix=save_temp_prefix)

@@ -186,6 +186,9 @@ def decode_latent(latent, preview_method, vae_opt=None):
     elif preview_method == "Latent2RGB-FLUX.1":
         latent_format = latent_formats.Flux()
         method = LatentPreviewMethod.Latent2RGB
+    elif preview_method == "Latent2RGB-LTXV":
+        latent_format = latent_formats.LTXV()
+        method = LatentPreviewMethod.Latent2RGB
     else:
         print(f"[Impact Pack] PreviewBridgeLatent: '{preview_method}' is unsupported preview method.")
         latent_format = latent_formats.SD15()
@@ -211,6 +214,7 @@ class PreviewBridgeLatent:
                                         "Latent2RGB-SDXL", "Latent2RGB-SD15", "Latent2RGB-SD3",
                                         "Latent2RGB-SD-X4", "Latent2RGB-Playground-2.5",
                                         "Latent2RGB-SC-Prior", "Latent2RGB-SC-B",
+                                        "Latent2RGB-LTXV",
                                         "TAEF1", "TAESDXL", "TAESD15", "TAESD3"],),
                     },
                 "optional": {
@@ -274,7 +278,13 @@ class PreviewBridgeLatent:
 
     def doit(self, latent, image, preview_method, vae_opt=None, block=False, unique_id=None, restore_mask='never', prompt=None, extra_pnginfo=None):
         latent_channels = latent['samples'].shape[1]
-        preview_method_channels = 16 if 'SD3' in preview_method or 'SC-Prior' in preview_method or 'FLUX.1' in preview_method or 'TAEF1' == preview_method else 4
+
+        if 'SD3' in preview_method or 'SC-Prior' in preview_method or 'FLUX.1' in preview_method or 'TAEF1' == preview_method:
+            preview_method_channels = 16
+        elif 'LTXV' in preview_method:
+            preview_method_channels = 128
+        else:
+            preview_method_channels = 4
 
         if vae_opt is None and latent_channels != preview_method_channels:
             print(f"[PreviewBridgeLatent] The version of latent is not compatible with preview_method.\nSD3, SD1/SD2, SDXL, SC-Prior, SC-B and FLUX.1 are not compatible with each other.")

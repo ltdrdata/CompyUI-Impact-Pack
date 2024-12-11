@@ -353,13 +353,16 @@ class ImpactSamEditorDialog extends ComfyDialog {
 			imgCtx.drawImage(orig_image, 0, 0, drawWidth, drawHeight);
 
 			// update mask
+			let w = (drawWidth * imgCanvas.clientWidth/imgCanvas.width) + "px";
+			let h = (drawHeight * imgCanvas.clientHeight/imgCanvas.height) + "px";
+
 			pointsCanvas.width = drawWidth;
 			pointsCanvas.height = drawHeight;
 			pointsCanvas.style.top = imgCanvas.offsetTop + "px";
 			pointsCanvas.style.left = imgCanvas.offsetLeft + "px";
 
-			maskCanvas.width = drawWidth;
-			maskCanvas.height = drawHeight;
+			maskCanvas.style.width = w;
+			maskCanvas.style.height = h;
 			maskCanvas.style.top = imgCanvas.offsetTop + "px";
 			maskCanvas.style.left = imgCanvas.offsetLeft + "px";
 

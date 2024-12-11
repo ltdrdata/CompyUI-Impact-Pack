@@ -2031,7 +2031,12 @@ class LatentSender(nodes.SaveLatent):
                              "samples": ("LATENT", ),
                              "filename_prefix": ("STRING", {"default": "latents/LatentSender"}),
                              "link_id": ("INT", {"default": 0, "min": 0, "max": sys.maxsize, "step": 1}),
-                             "preview_method": (["Latent2RGB-SDXL", "Latent2RGB-SD15", "TAESDXL", "TAESD15"],)
+                             "preview_method": (["Latent2RGB-FLUX.1",
+                                                 "Latent2RGB-SDXL", "Latent2RGB-SD15", "Latent2RGB-SD3",
+                                                 "Latent2RGB-SD-X4", "Latent2RGB-Playground-2.5",
+                                                 "Latent2RGB-SC-Prior", "Latent2RGB-SC-B",
+                                                 "Latent2RGB-LTXV",
+                                                 "TAEF1", "TAESDXL", "TAESD15", "TAESD3"],)
                              },
                 "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
                 }
@@ -2073,14 +2078,33 @@ class LatentSender(nodes.SaveLatent):
         if preview_method == "Latent2RGB-SD15":
             latent_format = latent_formats.SD15()
             method = LatentPreviewMethod.Latent2RGB
-        elif preview_method == "TAESD15":
+        elif preview_method == "Latent2RGB-SDXL":
+            latent_format = latent_formats.SDXL()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-SD3":
+            latent_format = latent_formats.SD3()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-SD-X4":
+            latent_format = latent_formats.SD_X4()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-Playground-2.5":
+            latent_format = latent_formats.SDXL_Playground_2_5()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-SC-Prior":
+            latent_format = latent_formats.SC_Prior()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-SC-B":
+            latent_format = latent_formats.SC_B()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-FLUX.1":
+            latent_format = latent_formats.Flux()
+            method = LatentPreviewMethod.Latent2RGB
+        elif preview_method == "Latent2RGB-LTXV":
+            latent_format = latent_formats.LTXV()
+            method = LatentPreviewMethod.Latent2RGB
+        else:
+            print(f"[Impact Pack] LatentSender: '{preview_method}' is unsupported preview method.")
             latent_format = latent_formats.SD15()
-            method = LatentPreviewMethod.TAESD
-        elif preview_method == "TAESDXL":
-            latent_format = latent_formats.SDXL()
-            method = LatentPreviewMethod.TAESD
-        else:  # preview_method == "Latent2RGB-SDXL"
-            latent_format = latent_formats.SDXL()
             method = LatentPreviewMethod.Latent2RGB
 
         previewer = core.get_previewer("cpu", latent_format=latent_format, force=True, method=method)
@@ -2154,15 +2178,18 @@ class ImpactWildcardProcessor:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {
-                        "wildcard_text": ("STRING", {"multiline": True, "dynamicPrompts": False}),
-                        "populated_text": ("STRING", {"multiline": True, "dynamicPrompts": False}),
-                        "mode": ("BOOLEAN", {"default": True, "label_on": "Populate", "label_off": "Fixed"}),
-                        "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+                        "wildcard_text": ("STRING", {"multiline": True, "dynamicPrompts": False, "tooltip": "Enter a prompt using wildcard syntax."}),
+                        "populated_text": ("STRING", {"multiline": True, "dynamicPrompts": False, "tooltip": "The actual value passed during the execution of 'ImpactWildcardProcessor' is what is shown here. The behavior varies slightly depending on the mode. Wildcard syntax can also be used in 'populated_text'."}),
+                        "mode": ("BOOLEAN", {"default": True, "label_on": "Populate", "label_off": "Fixed", "tooltip": "Populate: Before running the workflow, it overwrites the existing value of 'populated_text' with the prompt processed from 'wildcard_text'. In this mode, 'populated_text' cannot be edited.\nFixed: Ignores wildcard_text and keeps 'populated_text' as is. You can edit 'populated_text' in this mode."}),
+                        "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "Determines the random seed to be used for wildcard processing."}),
                         "Select to add Wildcard": (["Select the Wildcard to add to the text"],),
                     },
                 }
 
     CATEGORY = "ImpactPack/Prompt"
+
+    DESCRIPTION = ("The 'ImpactWildcardProcessor' processes text prompts written in wildcard syntax and outputs the processed text prompt.\n\n"
+                   "TIP: Before the workflow is executed, the processing result of 'wildcard_text' is displayed in 'populated_text', and the populated text is saved along with the workflow. If you want to use a seed converted as input, write the prompt directly in 'populated_text' instead of 'wildcard_text', and set the mode to 'Fixed'.")
 
     RETURN_TYPES = ("STRING", )
     FUNCTION = "doit"
@@ -2182,16 +2209,21 @@ class ImpactWildcardEncode:
         return {"required": {
                         "model": ("MODEL",),
                         "clip": ("CLIP",),
-                        "wildcard_text": ("STRING", {"multiline": True, "dynamicPrompts": False}),
-                        "populated_text": ("STRING", {"multiline": True, "dynamicPrompts": False}),
-                        "mode": ("BOOLEAN", {"default": True, "label_on": "Populate", "label_off": "Fixed"}),
+                        "wildcard_text": ("STRING", {"multiline": True, "dynamicPrompts": False, "tooltip": "Enter a prompt using wildcard syntax."}),
+                        "populated_text": ("STRING", {"multiline": True, "dynamicPrompts": False, "tooltip": "The actual value passed during the execution of 'ImpactWildcardEncode' is what is shown here. The behavior varies slightly depending on the mode. Wildcard syntax can also be used in 'populated_text'."}),
+                        "mode": ("BOOLEAN", {"default": True, "label_on": "Populate", "label_off": "Fixed", "tooltip": "Populate: Before running the workflow, it overwrites the existing value of 'populated_text' with the prompt processed from 'wildcard_text'. In this mode, 'populated_text' cannot be edited.\n"
+                                                                                                                       "Fixed: Ignores wildcard_text and keeps 'populated_text' as is. You can edit 'populated_text' in this mode."}),
                         "Select to add LoRA": (["Select the LoRA to add to the text"] + folder_paths.get_filename_list("loras"), ),
                         "Select to add Wildcard": (["Select the Wildcard to add to the text"], ),
-                        "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+                        "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "Determines the random seed to be used for wildcard processing."}),
                     },
                 }
 
     CATEGORY = "ImpactPack/Prompt"
+
+    DESCRIPTION = ("The 'ImpactWildcardEncode' node processes text prompts written in wildcard syntax and outputs them as conditioning. It also supports LoRA syntax, with the applied LoRA reflected in the model's output.\n\n"
+                   "TIP1: Before the workflow is executed, the processing result of 'wildcard_text' is displayed in 'populated_text', and the populated text is saved along with the workflow. If you want to use a seed converted as input, write the prompt directly in 'populated_text' instead of 'wildcard_text', and set the mode to 'Fixed'.\n"
+                   "TIP2: If the 'Inspire Pack' is installed, LBW(LoRA Block Weight) syntax can also be applied.")
 
     RETURN_TYPES = ("MODEL", "CLIP", "CONDITIONING", "STRING")
     RETURN_NAMES = ("model", "clip", "conditioning", "populated_text")
@@ -2217,7 +2249,7 @@ class ImpactSchedulerAdapter:
     def INPUT_TYPES(s):
         return {"required": {
             "scheduler": (comfy.samplers.KSampler.SCHEDULERS, {"defaultInput": True, }),
-            "extra_scheduler": (['None', 'AYS SDXL', 'AYS SD1', 'AYS SVD', 'GITS[coeff=1.2]'],),
+            "extra_scheduler": (['None', 'AYS SDXL', 'AYS SD1', 'AYS SVD', 'GITS[coeff=1.2]', 'LTXV[default]'],),
         }}
 
     CATEGORY = "ImpactPack/Util"

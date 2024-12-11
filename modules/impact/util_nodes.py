@@ -52,7 +52,10 @@ class GeneralSwitch:
 
         print(f"SELECTED: {input_name}")
 
-        return [input_name]
+        if input_name in kwargs:
+            return [input_name]
+        else:
+            return []
 
     @staticmethod
     def doit(*args, **kwargs):
@@ -501,7 +504,7 @@ class MakeMaskBatch:
     def doit(self, **kwargs):
         mask1 = kwargs['mask1']
         del kwargs['mask1']
-        masks = [utils.make_3d_mask(value) for value in kwargs.values()]
+        masks = [make_3d_mask(value) for value in kwargs.values()]
 
         if len(masks) == 0:
             return (mask1,)

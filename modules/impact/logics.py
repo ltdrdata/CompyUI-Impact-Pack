@@ -766,6 +766,29 @@ class ImpactExecutionOrderController:
         return signal, value
 
 
+class ImpactListBridge:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+                    "list_input": (any_typ,),
+                    }}
+
+    FUNCTION = "doit"
+
+    DESCRIPTION = "When passing the list output through this node, it collects and organizes the data before forwarding it, which ensures that the previous stage's sub-workflow has been completed."
+
+    CATEGORY = "ImpactPack/Util"
+    RETURN_TYPES = (any_typ, )
+    RETURN_NAMES = ("list_output", )
+
+    INPUT_IS_LIST = True
+    OUTPUT_IS_LIST = (True, )
+
+    @staticmethod
+    def doit(list_input):
+        return (list_input,)
+
+
 original_handle_execution = execution.PromptExecutor.handle_execution_error
 
 

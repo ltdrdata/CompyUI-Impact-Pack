@@ -1,3 +1,4 @@
+import functools
 import os
 import re
 import shutil
@@ -70,6 +71,7 @@ def process_wrap(cmd_str, cwd=None, handler=None, env=None):
     return process.wait()
 
 
+@functools.cache
 def get_installed_packages() -> Set[str]:
     try:
         result = subprocess.check_output([sys.executable, '-m', 'pip', 'list'], universal_newlines=True)
