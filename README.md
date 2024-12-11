@@ -2,11 +2,13 @@
 
 # ComfyUI-Impact-Pack
 
-**Custom nodes pack for ComfyUI**
-This custom node helps to conveniently enhance images through Detector, Detailer, Upscaler, Pipe, and more.
+**Custom node pack for ComfyUI**
+This node pack helps to conveniently enhance images through Detector, Detailer, Upscaler, Pipe, and more.
 
+NOTE: The UltralyticsDetectorProvider node is not part of the ComfyUI-Impact-Pack. To use the UltralyticsDetectorProvider node, please install the ComfyUI-Impact-Subpack separately.
 
 ## NOTICE 
+* V8.0: The `Impact Subpack` is no longer installed automatically. To use `UltralyticsDetectorProvider` nodes, please install the `Impact Subpack` separately.
 * V7.6: Automatic installation is no longer supported. Please install using ComfyUI-Manager, or manually install requirements.txt and run install.py to complete the installation.
 * V7.0: Supports Switch based on Execution Model Inversion.
 * V6.0: Supports FLUX.1 model in Impact KSampler, Detailers, PreviewBridgeLatent
@@ -33,9 +35,6 @@ This custom node helps to conveniently enhance images through Detector, Detailer
 ## Custom Nodes
 ### [Detector nodes](https://github.com/ltdrdata/ComfyUI-extension-tutorials/blob/Main/ComfyUI-Impact-Pack/tutorial/detectors.md)
   * `SAMLoader` - Loads the SAM model.
-  * `UltralyticsDetectorProvider` - Loads the Ultralystics model to provide SEGM_DETECTOR, BBOX_DETECTOR.
-    - Unlike `MMDetDetectorProvider`, for segm models, `BBOX_DETECTOR` is also provided.
-    - The various models available in UltralyticsDetectorProvider can be downloaded through **ComfyUI-Manager**.
   * `ONNXDetectorProvider` - Loads the ONNX model to provide BBOX_DETECTOR.
   * `CLIPSegDetectorProvider` - Wrapper for CLIPSeg to provide BBOX_DETECTOR.
     * You need to install the ComfyUI-CLIPSeg node extension.
@@ -312,12 +311,6 @@ This custom node helps to conveniently enhance images through Detector, Detailer
 * To use the existing deprecated legacy nodes, you need to enable the MMDet usage configuration.
 
 
-## Ultralytics models
-* When using ultralytics models, save them separately in `models/ultralytics/bbox` and `models/ultralytics/segm` depending on the type of model. Many models can be downloaded by searching for `ultralytics` in the Model Manager of ComfyUI-Manager.
-* huggingface.co/Bingsu/[adetailer](https://huggingface.co/Bingsu/adetailer/tree/main) - You can download face, people detection models, and clothing detection models.
-* ultralytics/[assets](https://github.com/ultralytics/assets/releases/) - You can download various types of detection models other than faces or people.
-* civitai/[adetailer](https://civitai.com/search/models?sortBy=models_v5&query=adetailer) - You can download various types detection models....Many models are associated with NSFW content.
-
 ## How to activate 'MMDet usage' (DEPRECATED)
 * Upon the initial execution, an `impact-pack.ini` file will be generated in the custom_nodes/ComfyUI-Impact-Pack directory.
 ```
@@ -359,11 +352,9 @@ mmdet_skip = False
 
 * pip install
    * segment-anything
-   * ultralytics
    * scikit-image
    * piexif 
    * opencv-python
-   * GitPython
    * scipy
    * numpy<2
    * dill

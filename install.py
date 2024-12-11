@@ -12,13 +12,11 @@ if sys.argv[0] == 'install.py':
 
 
 impact_path = os.path.join(os.path.dirname(__file__), "modules")
-subpack_path = os.path.join(os.path.dirname(__file__), "impact_subpack")
-subpack_repo = "https://github.com/ltdrdata/ComfyUI-Impact-Subpack"
 
 
 comfy_path = os.environ.get('COMFYUI_PATH')
 if comfy_path is None:
-    print(f"\n[bold yellow]WARN: The `COMFYUI_PATH` environment variable is not set. Assuming `{os.path.dirname(__file__)}/../../` as the ComfyUI path.[/bold yellow]", file=sys.stderr)
+    print(f"\nWARN: The `COMFYUI_PATH` environment variable is not set. Assuming `{os.path.dirname(__file__)}/../../` as the ComfyUI path.", file=sys.stderr)
     comfy_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 model_path = os.environ.get('COMFYUI_MODEL_PATH')
@@ -31,7 +29,7 @@ if model_path is None:
 
     if model_path is None:
         model_path = os.path.abspath(os.path.join(comfy_path, 'models'))
-    print(f"\n[bold yellow]WARN: The `COMFYUI_MODEL_PATH` environment variable is not set. Assuming `{model_path}` as the ComfyUI path.[/bold yellow]", file=sys.stderr)
+    print(f"\nWARN: The `COMFYUI_MODEL_PATH` environment variable is not set. Assuming `{model_path}` as the ComfyUI path.", file=sys.stderr)
 
 
 sys.path.append(impact_path)
@@ -76,37 +74,10 @@ try:
     import impact.config
 
     print("### ComfyUI-Impact-Pack: Check dependencies")
-    def ensure_subpack():
-        import git
-        if os.path.exists(subpack_path):
-            try:
-                repo = git.Repo(subpack_path)
-                repo.remotes.origin.pull()
-            except:
-                traceback.print_exc()
-                if platform.system() == 'Windows':
-                    print(f"[ComfyUI-Impact-Pack] Please turn off ComfyUI and remove '{subpack_path}' and restart ComfyUI.")
-                else:
-                    shutil.rmtree(subpack_path)
-                    git.Repo.clone_from(subpack_repo, subpack_path)
-        else:
-            git.Repo.clone_from(subpack_repo, subpack_path)
-
-
     def install():
-        subpack_install_script = os.path.join(subpack_path, "install.py")
-
-        print(f"### ComfyUI-Impact-Pack: Updating subpack")
-        ensure_subpack()  # The installation of the subpack must take place before ensure_pip. cv2 triggers a permission error.
-
         new_env = os.environ.copy()
         new_env["COMFYUI_PATH"] = comfy_path
         new_env["COMFYUI_MODEL_PATH"] = model_path
-
-        if os.path.exists(subpack_install_script):
-            process_wrap([sys.executable, 'install.py'], cwd=subpack_path, env=new_env)
-        else:
-            print(f"### ComfyUI-Impact-Pack: (Install Failed) Subpack\nFile not found: `{subpack_install_script}`")
 
         # Download model
         print("### ComfyUI-Impact-Pack: Check basic models")
@@ -136,6 +107,12 @@ try:
             os.mkdir(onnx_path)
 
         impact.config.write_config()
+
+        # Remove legacy subpack
+        subpack_path = os.path.join(os.path.dirname(__file__), 'impact_subpack')
+        if os.path.exists(subpack_path):
+            shutil.rmtree(subpack_path)
+            print(f"Legacy subpack is detected. '{subpack_path}' is removed.")
 
     install()
 
