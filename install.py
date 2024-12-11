@@ -113,6 +113,11 @@ try:
         if os.path.exists(subpack_path):
             shutil.rmtree(subpack_path)
             print(f"Legacy subpack is detected. '{subpack_path}' is removed.")
+            
+        subpack_path = os.path.join(os.path.dirname(__file__), 'subpack')
+        if os.path.exists(subpack_path):
+            shutil.rmtree(subpack_path)
+            print(f"Legacy subpack is detected. '{subpack_path}' is removed.")
 
     install()
 
