@@ -303,7 +303,11 @@ NOTE: The UltralyticsDetectorProvider node is not part of the ComfyUI-Impact-Pac
 1. `cd custom_nodes`
 2. `git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack`
 3. `cd ComfyUI-Impact-Pack`
-6. Restart ComfyUI
+4. `pip install -r requirements.txt`
+    * **IMPORTANT**:
+        * You must install it within the Python environment where ComfyUI is running.
+        * For the portable version, use `<installed path>\python_embeded\python.exe -m pip` instead of `pip`. For a `venv`, activate the `venv` first and then use `pip`.
+5. Restart ComfyUI
 
 * NOTE1: If an error occurs during the installation process, please refer to [Troubleshooting Page](troubleshooting/TROUBLESHOOTING.md) for assistance. 
 * NOTE2: You can use this colab notebook [colab notebook](https://colab.research.google.com/github/ltdrdata/ComfyUI-Impact-Pack/blob/Main/notebook/comfyui_colab_impact_pack.ipynb) to launch it. This notebook automatically downloads the impact pack to the custom_nodes directory, installs the tested dependencies, and runs it.
