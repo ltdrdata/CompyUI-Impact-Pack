@@ -273,6 +273,7 @@ NOTE: The UltralyticsDetectorProvider node is not part of the ComfyUI-Impact-Pac
       * For supported labels, please refer to the `config.json` of the respective HuggingFace repository.
     * `#Female` and `#Male` are symbols that group multiple labels such as `Female, women, woman, ...`, for convenience, rather than being single labels.
 
+
 ### Etc nodes
   * `Impact Scheduler Adapter` - With the addition of AYS to the scheduler of the Impact Pack and Inspire Pack, there is an issue of incompatibility when the existing scheduler widget is converted to input. The Impact Scheduler Adapter allows for an indirect connection to be possible.
   * `StringListToString` - Convert String List to String
@@ -288,59 +289,20 @@ NOTE: The UltralyticsDetectorProvider node is not part of the ComfyUI-Impact-Pac
   * `List Bridge` - When passing the list output through this node, it collects and organizes the data before forwarding it, which ensures that the previous stage's sub-workflow has been completed.
 
 
-## MMDet nodes (DEPRECATED) - Don't use these nodes
-* MMDetDetectorProvider - Loads the MMDet model to provide BBOX_DETECTOR and SEGM_DETECTOR.
-* To use the existing MMDetDetectorProvider, you need to enable the MMDet usage configuration.
-
-
 ## Feature
 * `Interactive SAM Detector (Clipspace)` - When you right-click on a node that has 'MASK' and 'IMAGE' outputs, a context menu will open. From this menu, you can either open a dialog to create a SAM Mask using 'Open in SAM Detector', or copy the content (likely mask data) using 'Copy (Clipspace)' and generate a mask using 'Impact SAM Detector' from the clipspace menu, and then paste it using 'Paste (Clipspace)'.
 * Providing a feature to detect errors that occur when mixing models and clips from checkpoints such as `SDXL Base`, `SDXL Refiner`, `SD1.x`, `SD2.x` during sample execution, and reporting appropriate errors.
 
 
-## Deprecated
-* The following nodes have been kept only for compatibility with existing workflows, and are no longer supported. Please replace them with new nodes.
-   * ONNX Detector (SEGS) - BBOX Detector (SEGS)
-   * MMDetLoader -> MMDetDetectorProvider
-   * SegsMaskCombine -> SEGS to MASK (combined)
-   * BboxDetectorForEach -> BBOX Detector (SEGS)
-   * SegmDetectorForEach -> SEGM Detector (SEGS)
-   * BboxDetectorCombined -> BBOX Detector (combined)
-   * SegmDetectorCombined -> SEGM Detector (combined)
-   * MaskPainter -> PreviewBridge
-* To use the existing deprecated legacy nodes, you need to enable the MMDet usage configuration.
-
-
-## How to activate 'MMDet usage' (DEPRECATED)
-* Upon the initial execution, an `impact-pack.ini` file will be generated in the custom_nodes/ComfyUI-Impact-Pack directory.
-```
-[default]
-dependency_version = 2
-mmdet_skip = True
-```
-* Change `mmdet_skip = True` to `mmdet_skip = False`
-```
-[default]
-dependency_version = 2
-mmdet_skip = False
-```
-* Restart ComfyUI
-
-
-## Installation
+## How To Install?
 
 ### Install via ComfyUI-Manager (Recommended)
 * Search `ComfyUI Impact Pack` in ComfyUI-Manager and click `Install` button.
 
 ### Manual Install (Not Recommended)
 1. `cd custom_nodes`
-2. `git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git`
+2. `git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack`
 3. `cd ComfyUI-Impact-Pack`
-4. (optional) `git clone https://github.com/ltdrdata/ComfyUI-Impact-Subpack impact_subpack`
-   * Impact Pack will automatically download subpack during its initial launch.
-5. (optional) `python install-manual.py`
-   * Impact Pack will automatically install its dependencies during its initial launch.
-   * For the portable version, you should execute the command `..\..\..\python_embeded\python.exe install-manual.py` to run the installation script.
 6. Restart ComfyUI
 
 * NOTE1: If an error occurs during the installation process, please refer to [Troubleshooting Page](troubleshooting/TROUBLESHOOTING.md) for assistance. 
@@ -363,9 +325,6 @@ mmdet_skip = False
    * (deprecated) openmim      # for mim
    * (deprecated) pycocotools  # for mim
    
-* mim install (deprecated)
-   * mmcv==2.0.0, mmdet==3.0.0, mmengine==0.7.2
-
 * linux packages (ubuntu)
   * libgl1-mesa-glx
   * libglib2.0-0
@@ -388,17 +347,16 @@ sam_editor_model = sam_vit_b_01ec64.pth
 ```
 
 
-## Other Materials (auto-download on initial startup)
+## Other Materials (auto-download when installing)
 
-* ComfyUI/models/mmdets/bbox <= https://huggingface.co/dustysys/ddetailer/resolve/main/mmdet/bbox/mmdet_anime-face_yolov3.pth
-* ComfyUI/models/mmdets/bbox <= https://raw.githubusercontent.com/Bing-su/dddetailer/master/config/mmdet_anime-face_yolov3.py
 * ComfyUI/models/sams <= https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
+
 
 ## Troubleshooting page
 * [Troubleshooting Page](troubleshooting/TROUBLESHOOTING.md)
 
 
-## How to use (DDetailer feature)
+## How To Use (DDetailer feature)
 
 #### 1. Basic auto face detection and refine exapmle.
 ![simple](https://github.com/ltdrdata/ComfyUI-extension-tutorials/raw/Main/ComfyUI-Impact-Pack/images/simple.png)
