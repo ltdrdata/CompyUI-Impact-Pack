@@ -68,6 +68,8 @@ NOTE: The UltralyticsDetectorProvider node is not part of the ComfyUI-Impact-Pac
   * `Dilate Mask` - Dilate Mask.
     * Support erosion for negative value.
   * `Gaussian Blur Mask` - Apply Gaussian Blur to Mask. You can utilize this for mask feathering.
+  * `Mask Rect Area` - Create a rectangular mask defined by percentages with preview canvas.
+  * `Mask Rect Area (Advanced)` - Create a rectangular mask defined by pixels and image size. 
 
 ### [Detailer nodes](https://github.com/ltdrdata/ComfyUI-extension-tutorials/blob/Main/ComfyUI-Impact-Pack/tutorial/detailers.md)
   * `Detailer (SEGS)` - Refines the image based on SEGS.
