@@ -1384,9 +1384,14 @@ def vae_decode(vae, samples, use_tile, hook, tile_size=512, overlap=64):
     return pixels
 
 
-def vae_encode(vae, pixels, use_tile, hook, tile_size=512):
+def vae_encode(vae, pixels, use_tile, hook, tile_size=512, overlap=64):
     if use_tile:
-        samples = nodes.VAEEncodeTiled().encode(vae, pixels, tile_size)[0]
+        encoder = nodes.VAEEncodeTiled()
+        if 'overlap' in inspect.signature(encoder.encode).parameters:
+            samples = encoder.encode(vae, pixels, tile_size, overlap=overlap)[0]
+        else:
+            print(f"[Impact Pack] Your ComfyUI is outdated.")
+            samples = encoder.encode(vae, pixels, tile_size)[0]
     else:
         samples = nodes.VAEEncode().encode(vae, pixels)[0]
 
@@ -1412,7 +1417,7 @@ def latent_upscale_on_pixel_space_shape2(samples, scale_method, w, h, vae, use_t
     if hook is not None:
         pixels = hook.post_upscale(pixels)
 
-    return (vae_encode(vae, pixels, use_tile, hook, tile_size=tile_size), old_pixels)
+    return vae_encode(vae, pixels, use_tile, hook, tile_size=tile_size, overlap=overlap), old_pixels
 
 
 def latent_upscale_on_pixel_space(samples, scale_method, scale_factor, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None, overlap=64):
@@ -1433,7 +1438,7 @@ def latent_upscale_on_pixel_space2(samples, scale_method, scale_factor, vae, use
     if hook is not None:
         pixels = hook.post_upscale(pixels)
 
-    return (vae_encode(vae, pixels, use_tile, hook, tile_size=tile_size), old_pixels)
+    return vae_encode(vae, pixels, use_tile, hook, tile_size=tile_size, overlap=overlap), old_pixels
 
 
 def latent_upscale_on_pixel_space_with_model_shape(samples, scale_method, upscale_model, new_w, new_h, vae, use_tile=False, tile_size=512, save_temp_prefix=None, hook=None, overlap=64):
@@ -1464,7 +1469,7 @@ def latent_upscale_on_pixel_space_with_model_shape2(samples, scale_method, upsca
     if hook is not None:
         pixels = hook.post_upscale(pixels)
 
-    return (vae_encode(vae, pixels, use_tile, hook, tile_size=tile_size), old_pixels)
+    return vae_encode(vae, pixels, use_tile, hook, tile_size=tile_size, overlap=overlap), old_pixels
 
 
 def latent_upscale_on_pixel_space_with_model(samples, scale_method, upscale_model, scale_factor, vae, use_tile=False,
@@ -1500,7 +1505,7 @@ def latent_upscale_on_pixel_space_with_model2(samples, scale_method, upscale_mod
     if hook is not None:
         pixels = hook.post_upscale(pixels)
 
-    return (vae_encode(vae, pixels, use_tile, hook, tile_size=tile_size), old_pixels)
+    return vae_encode(vae, pixels, use_tile, hook, tile_size=tile_size, overlap=overlap), old_pixels
 
 
 class TwoSamplersForMaskUpscaler:
