@@ -1675,8 +1675,14 @@ class PixelKSampleUpscaler:
                 preprocessor = nodes.NODE_CLASS_MAPPINGS['TilePreprocessor']()
                 # might add capacity to set pyrUp_iters later, not needed for now though
                 preprocessed = preprocessor.execute(images, pyrUp_iters=3, resolution=min(image_w, image_h))[0]
-                apply_cnet = getattr(nodes.ControlNetApply(), nodes.ControlNetApply.FUNCTION)
-                positive = apply_cnet(positive, self.tile_cnet, preprocessed, strength=self.tile_cnet_strength)[0]
+                positive, negative = nodes.ControlNetApplyAdvanced().apply_controlnet(positive=positive,
+                                                                                      negative=negative,
+                                                                                      control_net=self.tile_cnet,
+                                                                                      image=preprocessed,
+                                                                                      strength=self.tile_cnet_strength,
+                                                                                      start_percent=0,
+                                                                                      end_percent=1.0,
+                                                                                      vae=self.vae)
 
         refined_latent = impact_sampling.impact_sample(model, seed, steps, cfg, sampler_name, scheduler,
                                                        positive, negative, upscaled_latent, denoise, scheduler_func=self.scheduler_func)
@@ -1979,8 +1985,14 @@ class PixelTiledKSampleUpscaler:
                 preprocessor = nodes.NODE_CLASS_MAPPINGS['TilePreprocessor']()
                 # might add capacity to set pyrUp_iters later, not needed for now though
                 preprocessed = preprocessor.execute(images, pyrUp_iters=3, resolution=min(image_w, image_h))[0]
-                apply_cnet = getattr(nodes.ControlNetApply(), nodes.ControlNetApply.FUNCTION)
-                positive = apply_cnet(positive, self.tile_cnet, preprocessed, strength=self.tile_cnet_strength)[0]
+
+                positive, negative = nodes.ControlNetApplyAdvanced().apply_controlnet(positive=positive,
+                                                                                      negative=negative,
+                                                                                      control_net=self.tile_cnet,
+                                                                                      image=preprocessed,
+                                                                                      strength=self.tile_cnet_strength,
+                                                                                      start_percent=0, end_percent=1.0,
+                                                                                      vae=self.vae)
 
         return TiledKSampler().sample(model, seed, tile_width, tile_height, tiling_strategy, steps, cfg, sampler_name,
                                       scheduler, positive, negative, latent, denoise)[0]
