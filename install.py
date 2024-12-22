@@ -69,7 +69,6 @@ def process_wrap(cmd_str, cwd=None, handler=None, env=None):
 
 try:
     import platform
-    import folder_paths
     from torchvision.datasets.utils import download_url
     import impact.config
 
