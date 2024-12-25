@@ -1953,7 +1953,7 @@ class PixelTiledKSampleUpscaler:
     def __init__(self, scale_method, model, vae, seed, steps, cfg, sampler_name, scheduler, positive, negative,
                  denoise,
                  tile_width, tile_height, tiling_strategy,
-                 upscale_model_opt=None, hook_opt=None, tile_cnet_opt=None, tile_size=512, tile_cnet_strength=1.0):
+                 upscale_model_opt=None, hook_opt=None, tile_cnet_opt=None, tile_size=512, tile_cnet_strength=1.0, overlap=64):
         self.params = scale_method, model, vae, seed, steps, cfg, sampler_name, scheduler, positive, negative, denoise
         self.vae = vae
         self.tile_params = tile_width, tile_height, tiling_strategy
@@ -1963,6 +1963,7 @@ class PixelTiledKSampleUpscaler:
         self.tile_size = tile_size
         self.is_tiled = True
         self.tile_cnet_strength = tile_cnet_strength
+        self.overlap = overlap
 
     def tiled_ksample(self, latent, images):
         if "BNK_TiledKSampler" in nodes.NODE_CLASS_MAPPINGS:

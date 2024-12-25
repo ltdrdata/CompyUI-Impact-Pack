@@ -28,6 +28,7 @@ import base64
 import impact.wildcards as wildcards
 from . import hooks
 from . import utils
+import inspect
 
 
 try:
@@ -986,6 +987,7 @@ class PixelTiledKSampleUpscalerProvider:
                         "pk_hook_opt": ("PK_HOOK", ),
                         "tile_cnet_opt": ("CONTROL_NET", ),
                         "tile_cnet_strength": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01}),
+                        "overlap": ("INT", {"default": 64, "min": 0, "max": 4096, "step": 32}),
                     }
                 }
 
@@ -995,11 +997,11 @@ class PixelTiledKSampleUpscalerProvider:
     CATEGORY = "ImpactPack/Upscale"
 
     def doit(self, scale_method, model, vae, seed, steps, cfg, sampler_name, scheduler, positive, negative, denoise, tile_width, tile_height, tiling_strategy, upscale_model_opt=None,
-             pk_hook_opt=None, tile_cnet_opt=None, tile_cnet_strength=1.0):
+             pk_hook_opt=None, tile_cnet_opt=None, tile_cnet_strength=1.0, overlap=64):
         if "BNK_TiledKSampler" in nodes.NODE_CLASS_MAPPINGS:
             upscaler = core.PixelTiledKSampleUpscaler(scale_method, model, vae, seed, steps, cfg, sampler_name, scheduler, positive, negative, denoise,
                                                       tile_width, tile_height, tiling_strategy, upscale_model_opt, pk_hook_opt, tile_cnet_opt,
-                                                      tile_size=max(tile_width, tile_height), tile_cnet_strength=tile_cnet_strength)
+                                                      tile_size=max(tile_width, tile_height), tile_cnet_strength=tile_cnet_strength, overlap=overlap)
             return (upscaler, )
         else:
             utils.try_install_custom_node('https://github.com/BlenderNeko/ComfyUI_TiledKSampler',
@@ -1312,7 +1314,11 @@ class IterativeImageUpscale:
 
         core.update_node_status(unique_id, "VAEEncode (first)", 0)
         if upscaler.is_tiled:
-            latent = nodes.VAEEncodeTiled().encode(vae, pixels, upscaler.tile_size)[0]
+            encoder = nodes.VAEEncodeTiled()
+            if 'overlap' in inspect.signature(encoder.encode).parameters:
+                latent = encoder.encode(vae, pixels, upscaler.tile_size, overlap=upscaler.overlap)[0]
+            else:
+                latent = encoder.encode(vae, pixels, upscaler.tile_size)[0]
         else:
             latent = nodes.VAEEncode().encode(vae, pixels)[0]
 
