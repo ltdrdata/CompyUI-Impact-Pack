@@ -7,3 +7,5 @@ subpack
 impact_subpack
 *.txt
 *.yaml
+!requirements.txt
+!LICENSE.txt
