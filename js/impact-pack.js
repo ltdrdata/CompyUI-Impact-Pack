@@ -222,6 +222,31 @@ api.addEventListener("executed", progressExecuteHandler);
 
 app.registerExtension({
 	name: "Comfy.Impack",
+
+    commands: [
+      {
+        id: 'refresh-impact-wildcard',
+        label: 'Impact: Refresh Wildcard',
+        function: async () => {
+        	await api.fetchApi('/impact/wildcards/refresh');
+        	await load_wildcards();
+        	app.extensionManager.toast.add({
+				severity: 'info',
+				summary: 'Refreshed!',
+				detail: 'Impact Wildcard List is refreshed!!',
+				life: 3000
+			});
+        }
+      }
+    ],
+
+    menuCommands: [
+      {
+        path: ['Edit'],
+        commands: ['refresh-impact-wildcard']
+      }
+    ],
+
 	loadedGraphNode(node, app) {
 		if (node.comfyClass == "MaskPainter") {
 			input_dirty[node.id + ""] = true;
