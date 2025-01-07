@@ -270,7 +270,7 @@ class DetailerForEach:
         else:
             ordered_segs = segs[1]
 
-        if noise_mask_feather > 0 and 'denoise_mask_function' not in model.model_options:
+        if not (isinstance(model, str) and model == "DUMMY") and noise_mask_feather > 0 and 'denoise_mask_function' not in model.model_options:
             model = nodes_differential_diffusion.DifferentialDiffusion().apply(model)[0]
 
         for i, seg in enumerate(ordered_segs):
@@ -298,13 +298,16 @@ class DetailerForEach:
 
             seg_seed = seed + i if seg_seed is None else seg_seed
 
-            cropped_positive = [
-                [condition, {
-                    k: core.crop_condition_mask(v, image, seg.crop_region) if k == "mask" else v
-                    for k, v in details.items()
-                }]
-                for condition, details in positive
-            ]
+            if not isinstance(positive, str):
+                cropped_positive = [
+                    [condition, {
+                        k: core.crop_condition_mask(v, image, seg.crop_region) if k == "mask" else v
+                        for k, v in details.items()
+                    }]
+                    for condition, details in positive
+                ]
+            else:
+                cropped_positive = positive
 
             if not isinstance(negative, str):
                 cropped_negative = [
@@ -325,16 +328,20 @@ class DetailerForEach:
                 break
 
             orig_cropped_image = cropped_image.clone()
-            enhanced_image, cnet_pils = core.enhance_detail(cropped_image, model, clip, vae, guide_size, guide_size_for_bbox, max_size,
-                                                            seg.bbox, seg_seed, steps, cfg, sampler_name, scheduler,
-                                                            cropped_positive, cropped_negative, denoise, cropped_mask, force_inpaint,
-                                                            wildcard_opt=wildcard_item, wildcard_opt_concat_mode=wildcard_concat_mode,
-                                                            detailer_hook=detailer_hook,
-                                                            refiner_ratio=refiner_ratio, refiner_model=refiner_model,
-                                                            refiner_clip=refiner_clip, refiner_positive=refiner_positive,
-                                                            refiner_negative=refiner_negative, control_net_wrapper=seg.control_net_wrapper,
-                                                            cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather,
-                                                            scheduler_func=scheduler_func_opt)
+            if not (isinstance(model, str) and model == "DUMMY"):
+                enhanced_image, cnet_pils = core.enhance_detail(cropped_image, model, clip, vae, guide_size, guide_size_for_bbox, max_size,
+                                                                seg.bbox, seg_seed, steps, cfg, sampler_name, scheduler,
+                                                                cropped_positive, cropped_negative, denoise, cropped_mask, force_inpaint,
+                                                                wildcard_opt=wildcard_item, wildcard_opt_concat_mode=wildcard_concat_mode,
+                                                                detailer_hook=detailer_hook,
+                                                                refiner_ratio=refiner_ratio, refiner_model=refiner_model,
+                                                                refiner_clip=refiner_clip, refiner_positive=refiner_positive,
+                                                                refiner_negative=refiner_negative, control_net_wrapper=seg.control_net_wrapper,
+                                                                cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather,
+                                                                scheduler_func=scheduler_func_opt)
+            else:
+                enhanced_image = cropped_image
+                cnet_pils = None
 
             if cnet_pils is not None:
                 cnet_pil_list.extend(cnet_pils)
