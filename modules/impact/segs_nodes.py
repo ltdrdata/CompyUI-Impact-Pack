@@ -38,7 +38,7 @@ class SEGSDetailer:
                      "denoise": ("FLOAT", {"default": 0.5, "min": 0.0001, "max": 1.0, "step": 0.01}),
                      "noise_mask": ("BOOLEAN", {"default": True, "label_on": "enabled", "label_off": "disabled"}),
                      "force_inpaint": ("BOOLEAN", {"default": True, "label_on": "enabled", "label_off": "disabled"}),
-                     "basic_pipe": ("BASIC_PIPE",),
+                     "basic_pipe": ("BASIC_PIPE", {"tooltip": "If the `ImpactDummyInput` is connected to the model in the basic_pipe, the inference stage is skipped."}),
                      "refiner_ratio": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 1.0}),
                      "batch_size": ("INT", {"default": 1, "min": 1, "max": 100}),
 
@@ -76,7 +76,7 @@ class SEGSDetailer:
         new_segs = []
         cnet_pil_list = []
 
-        if noise_mask_feather > 0 and 'denoise_mask_function' not in model.model_options:
+        if not (isinstance(model, str) and model == "DUMMY") and noise_mask_feather > 0 and 'denoise_mask_function' not in model.model_options:
             model = nodes_differential_diffusion.DifferentialDiffusion().apply(model)[0]
 
         for i in range(batch_size):
@@ -113,13 +113,17 @@ class SEGSDetailer:
                     for condition, details in negative
                 ]
 
-                enhanced_image, cnet_pils = core.enhance_detail(cropped_image, model, clip, vae, guide_size, guide_size_for, max_size,
-                                                                seg.bbox, seed, steps, cfg, sampler_name, scheduler,
-                                                                cropped_positive, cropped_negative, denoise, cropped_mask, force_inpaint,
-                                                                refiner_ratio=refiner_ratio, refiner_model=refiner_model,
-                                                                refiner_clip=refiner_clip, refiner_positive=refiner_positive, refiner_negative=refiner_negative,
-                                                                control_net_wrapper=seg.control_net_wrapper, cycle=cycle,
-                                                                inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, scheduler_func=scheduler_func_opt)
+                if not (isinstance(model, str) and model == "DUMMY"):
+                    enhanced_image, cnet_pils = core.enhance_detail(cropped_image, model, clip, vae, guide_size, guide_size_for, max_size,
+                                                                    seg.bbox, seed, steps, cfg, sampler_name, scheduler,
+                                                                    cropped_positive, cropped_negative, denoise, cropped_mask, force_inpaint,
+                                                                    refiner_ratio=refiner_ratio, refiner_model=refiner_model,
+                                                                    refiner_clip=refiner_clip, refiner_positive=refiner_positive, refiner_negative=refiner_negative,
+                                                                    control_net_wrapper=seg.control_net_wrapper, cycle=cycle,
+                                                                    inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, scheduler_func=scheduler_func_opt)
+                else:
+                    enhanced_image = cropped_image
+                    cnet_pils = None
 
                 if cnet_pils is not None:
                     cnet_pil_list.extend(cnet_pils)

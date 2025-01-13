@@ -192,7 +192,7 @@ class DetailerForEach:
         return {"required": {
                     "image": ("IMAGE", ),
                     "segs": ("SEGS", ),
-                    "model": ("MODEL",),
+                    "model": ("MODEL", {"tooltip": "If the `ImpactDummyInput` is connected to the model, the inference stage is skipped."}),
                     "clip": ("CLIP",),
                     "vae": ("VAE",),
                     "guide_size": ("FLOAT", {"default": 512, "min": 64, "max": nodes.MAX_RESOLUTION, "step": 8}),
@@ -413,7 +413,7 @@ class DetailerForEachPipe:
                       "feather": ("INT", {"default": 5, "min": 0, "max": 100, "step": 1}),
                       "noise_mask": ("BOOLEAN", {"default": True, "label_on": "enabled", "label_off": "disabled"}),
                       "force_inpaint": ("BOOLEAN", {"default": True, "label_on": "enabled", "label_off": "disabled"}),
-                      "basic_pipe": ("BASIC_PIPE", ),
+                      "basic_pipe": ("BASIC_PIPE", {"tooltip": "If the `ImpactDummyInput` is connected to the model in the basic_pipe, the inference stage is skipped."}),
                       "wildcard": ("STRING", {"multiline": True, "dynamicPrompts": False}),
                       "refiner_ratio": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 1.0}),
 
@@ -470,7 +470,7 @@ class FaceDetailer:
     def INPUT_TYPES(s):
         return {"required": {
                      "image": ("IMAGE", ),
-                     "model": ("MODEL",),
+                     "model": ("MODEL", {"tooltip": "If the `ImpactDummyInput` is connected to the model, the inference stage is skipped."}),
                      "clip": ("CLIP",),
                      "vae": ("VAE",),
                      "guide_size": ("FLOAT", {"default": 512, "min": 64, "max": nodes.MAX_RESOLUTION, "step": 8}),
@@ -1347,7 +1347,7 @@ class FaceDetailerPipe:
     def INPUT_TYPES(s):
         return {"required": {
                     "image": ("IMAGE", ),
-                    "detailer_pipe": ("DETAILER_PIPE",),
+                    "detailer_pipe": ("DETAILER_PIPE", {"tooltip": "If the `ImpactDummyInput` is connected to the model in the detailer_pipe, the inference stage is skipped."}),
                     "guide_size": ("FLOAT", {"default": 512, "min": 64, "max": nodes.MAX_RESOLUTION, "step": 8}),
                     "guide_size_for": ("BOOLEAN", {"default": True, "label_on": "bbox", "label_off": "crop_region"}),
                     "max_size": ("FLOAT", {"default": 1024, "min": 64, "max": nodes.MAX_RESOLUTION, "step": 8}),
