@@ -370,7 +370,6 @@ def enhance_detail(image, model, clip, vae, guide_size, guide_size_for_bbox, max
         refined_latent = detailer_hook.pre_decode(refined_latent)
 
     # non-latent downscale - latent downscale cause bad quality
-    print("[Impact Pack] vae decoding...")
     start = time.time()
     if vae_tiled_decode:
         (refined_image,) = nodes.VAEDecodeTiled().decode(vae, refined_latent, 512) # using default settings

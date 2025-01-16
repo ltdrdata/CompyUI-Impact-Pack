@@ -508,7 +508,6 @@ def to_latent_image(pixels, vae, vae_tiled_encode=False):
     if pixels.shape[1] != x or pixels.shape[2] != y:
         pixels = pixels[:, :x, :y, :]
 
-    print("[Impact Pack] vae encoding...")
     start = time.time()
     if vae_tiled_encode:
         encoded = nodes.VAEEncodeTiled().encode(vae, pixels, 512, overlap=64)[0] # using default settings
