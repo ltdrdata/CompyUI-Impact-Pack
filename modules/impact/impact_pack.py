@@ -218,6 +218,8 @@ class DetailerForEach:
                     "inpaint_model": ("BOOLEAN", {"default": False, "label_on": "enabled", "label_off": "disabled"}),
                     "noise_mask_feather": ("INT", {"default": 20, "min": 0, "max": 100, "step": 1}),
                     "scheduler_func_opt": ("SCHEDULER_FUNC",),
+                    "tiled_encode": ("BOOLEAN", {"default": False, "label_on": "enabled", "label_off": "disabled"}),
+                    "tiled_decode": ("BOOLEAN", {"default": False, "label_on": "enabled", "label_off": "disabled"}),
                    }
                 }
 
@@ -234,7 +236,7 @@ class DetailerForEach:
     def do_detail(image, segs, model, clip, vae, guide_size, guide_size_for_bbox, max_size, seed, steps, cfg, sampler_name, scheduler,
                   positive, negative, denoise, feather, noise_mask, force_inpaint, wildcard_opt=None, detailer_hook=None,
                   refiner_ratio=None, refiner_model=None, refiner_clip=None, refiner_positive=None, refiner_negative=None,
-                  cycle=1, inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None):
+                  cycle=1, inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None, tiled_encode=False, tiled_decode=False):
 
         if len(image) > 1:
             raise Exception('[Impact Pack] ERROR: DetailerForEach does not allow image batches.\nPlease refer to https://github.com/ltdrdata/ComfyUI-extension-tutorials/blob/Main/ComfyUI-Impact-Pack/tutorial/batching-detailer.md for more information.')
@@ -338,7 +340,8 @@ class DetailerForEach:
                                                                 refiner_clip=refiner_clip, refiner_positive=refiner_positive,
                                                                 refiner_negative=refiner_negative, control_net_wrapper=seg.control_net_wrapper,
                                                                 cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather,
-                                                                scheduler_func=scheduler_func_opt)
+                                                                scheduler_func=scheduler_func_opt, vae_tiled_encode=tiled_encode,
+                                                                vae_tiled_decode=tiled_decode)
             else:
                 enhanced_image = cropped_image
                 cnet_pils = None
@@ -384,13 +387,15 @@ class DetailerForEach:
 
     def doit(self, image, segs, model, clip, vae, guide_size, guide_size_for, max_size, seed, steps, cfg, sampler_name,
              scheduler, positive, negative, denoise, feather, noise_mask, force_inpaint, wildcard, cycle=1,
-             detailer_hook=None, inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None):
+             detailer_hook=None, inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None,
+             tiled_encode=False, tiled_decode=False):
 
         enhanced_img, *_ = \
             DetailerForEach.do_detail(image, segs, model, clip, vae, guide_size, guide_size_for, max_size, seed, steps,
                                       cfg, sampler_name, scheduler, positive, negative, denoise, feather, noise_mask,
                                       force_inpaint, wildcard, detailer_hook,
-                                      cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, scheduler_func_opt=scheduler_func_opt)
+                                      cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, 
+                                      scheduler_func_opt=scheduler_func_opt, tiled_encode=tiled_encode, tiled_decode=tiled_decode)
 
         return (enhanced_img, )
 
@@ -425,6 +430,8 @@ class DetailerForEachPipe:
                       "inpaint_model": ("BOOLEAN", {"default": False, "label_on": "enabled", "label_off": "disabled"}),
                       "noise_mask_feather": ("INT", {"default": 20, "min": 0, "max": 100, "step": 1}),
                       "scheduler_func_opt": ("SCHEDULER_FUNC",),
+                      "tiled_encode": ("BOOLEAN", {"default": False, "label_on": "enabled", "label_off": "disabled"},
+                      "tiled_decode": ("BOOLEAN", {"default": False, "label_on": "enabled", "label_off": "disabled"}),
                      }
                 }
 
@@ -438,7 +445,8 @@ class DetailerForEachPipe:
     def doit(self, image, segs, guide_size, guide_size_for, max_size, seed, steps, cfg, sampler_name, scheduler,
              denoise, feather, noise_mask, force_inpaint, basic_pipe, wildcard,
              refiner_ratio=None, detailer_hook=None, refiner_basic_pipe_opt=None,
-             cycle=1, inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None):
+             cycle=1, inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None,
+             tiled_encode=False, tiled_decode=False):
 
         if len(image) > 1:
             raise Exception('[Impact Pack] ERROR: DetailerForEach does not allow image batches.\nPlease refer to https://github.com/ltdrdata/ComfyUI-extension-tutorials/blob/Main/ComfyUI-Impact-Pack/tutorial/batching-detailer.md for more information.')
@@ -456,7 +464,8 @@ class DetailerForEachPipe:
                                       force_inpaint, wildcard, detailer_hook,
                                       refiner_ratio=refiner_ratio, refiner_model=refiner_model,
                                       refiner_clip=refiner_clip, refiner_positive=refiner_positive, refiner_negative=refiner_negative,
-                                      cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, scheduler_func_opt=scheduler_func_opt)
+                                      cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, scheduler_func_opt=scheduler_func_opt,
+                                      tiled_encode=tiled_encode, tiled_decode=tiled_decode)
 
         # set fallback image
         if len(cnet_pil_list) == 0:
@@ -513,6 +522,8 @@ class FaceDetailer:
                     "inpaint_model": ("BOOLEAN", {"default": False, "label_on": "enabled", "label_off": "disabled"}),
                     "noise_mask_feather": ("INT", {"default": 20, "min": 0, "max": 100, "step": 1}),
                     "scheduler_func_opt": ("SCHEDULER_FUNC",),
+                    "tiled_encode": ("BOOLEAN", {"default": False, "label_on": "enabled", "label_off": "disabled"},
+                    "tiled_decode": ("BOOLEAN", {"default": False, "label_on": "enabled", "label_off": "disabled"}),
                 }}
 
     RETURN_TYPES = ("IMAGE", "IMAGE", "IMAGE", "MASK", "DETAILER_PIPE", "IMAGE")
@@ -530,7 +541,7 @@ class FaceDetailer:
                      sam_mask_hint_use_negative, drop_size,
                      bbox_detector, segm_detector=None, sam_model_opt=None, wildcard_opt=None, detailer_hook=None,
                      refiner_ratio=None, refiner_model=None, refiner_clip=None, refiner_positive=None, refiner_negative=None, cycle=1,
-                     inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None):
+                     inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None, tiled_encode=False, tiled_decode=False):
 
         # make default prompt as 'face' if empty prompt for CLIPSeg
         bbox_detector.setAux('face')
@@ -562,7 +573,8 @@ class FaceDetailer:
                                           refiner_ratio=refiner_ratio, refiner_model=refiner_model,
                                           refiner_clip=refiner_clip, refiner_positive=refiner_positive,
                                           refiner_negative=refiner_negative,
-                                          cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, scheduler_func_opt=scheduler_func_opt)
+                                          cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather,
+                                          scheduler_func_opt=scheduler_func_opt, tiled_encode=tiled_encode, tiled_decode=tiled_decode)
         else:
             enhanced_img = image
             cropped_enhanced = []
@@ -588,7 +600,8 @@ class FaceDetailer:
              bbox_threshold, bbox_dilation, bbox_crop_factor,
              sam_detection_hint, sam_dilation, sam_threshold, sam_bbox_expansion, sam_mask_hint_threshold,
              sam_mask_hint_use_negative, drop_size, bbox_detector, wildcard, cycle=1,
-             sam_model_opt=None, segm_detector_opt=None, detailer_hook=None, inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None):
+             sam_model_opt=None, segm_detector_opt=None, detailer_hook=None, inpaint_model=False, noise_mask_feather=0,
+             scheduler_func_opt=None, tiled_encode=False, tiled_decode=False):
 
         result_img = None
         result_mask = None
@@ -606,7 +619,8 @@ class FaceDetailer:
                 bbox_threshold, bbox_dilation, bbox_crop_factor,
                 sam_detection_hint, sam_dilation, sam_threshold, sam_bbox_expansion, sam_mask_hint_threshold,
                 sam_mask_hint_use_negative, drop_size, bbox_detector, segm_detector_opt, sam_model_opt, wildcard, detailer_hook,
-                cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, scheduler_func_opt=scheduler_func_opt)
+                cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, scheduler_func_opt=scheduler_func_opt,
+                tiled_encode=tiled_encode, tiled_decode=tiled_decode)
 
             result_img = torch.cat((result_img, enhanced_img), dim=0) if result_img is not None else enhanced_img
             result_mask = torch.cat((result_mask, mask), dim=0) if result_mask is not None else mask
@@ -1381,6 +1395,8 @@ class FaceDetailerPipe:
                     "inpaint_model": ("BOOLEAN", {"default": False, "label_on": "enabled", "label_off": "disabled"}),
                     "noise_mask_feather": ("INT", {"default": 20, "min": 0, "max": 100, "step": 1}),
                     "scheduler_func_opt": ("SCHEDULER_FUNC",),
+                    "tiled_encode": ("BOOLEAN", {"default": False, "label_on": "enabled", "label_off": "disabled"},
+                    "tiled_decode": ("BOOLEAN", {"default": False, "label_on": "enabled", "label_off": "disabled"}),
                    }
                 }
 
@@ -1395,7 +1411,8 @@ class FaceDetailerPipe:
              denoise, feather, noise_mask, force_inpaint, bbox_threshold, bbox_dilation, bbox_crop_factor,
              sam_detection_hint, sam_dilation, sam_threshold, sam_bbox_expansion,
              sam_mask_hint_threshold, sam_mask_hint_use_negative, drop_size, refiner_ratio=None,
-             cycle=1, inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None):
+             cycle=1, inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None,
+             tiled_encode=False, tiled_decode=False):
 
         result_img = None
         result_mask = None
@@ -1418,7 +1435,8 @@ class FaceDetailerPipe:
                 sam_mask_hint_use_negative, drop_size, bbox_detector, segm_detector, sam_model_opt, wildcard, detailer_hook,
                 refiner_ratio=refiner_ratio, refiner_model=refiner_model,
                 refiner_clip=refiner_clip, refiner_positive=refiner_positive, refiner_negative=refiner_negative,
-                cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, scheduler_func_opt=scheduler_func_opt)
+                cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, scheduler_func_opt=scheduler_func_opt,
+                tiled_encode=tiled_encode, tiled_decode=tiled_decode)
 
             result_img = torch.cat((result_img, enhanced_img), dim=0) if result_img is not None else enhanced_img
             result_mask = torch.cat((result_mask, mask), dim=0) if result_mask is not None else mask
@@ -1552,7 +1570,7 @@ class DetailerForEachTest(DetailerForEach):
 
     def doit(self, image, segs, model, clip, vae, guide_size, guide_size_for, max_size, seed, steps, cfg, sampler_name,
              scheduler, positive, negative, denoise, feather, noise_mask, force_inpaint, wildcard, detailer_hook=None,
-             cycle=1, inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None):
+             cycle=1, inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None, tiled_encode=False, tiled_decode=False):
 
         if len(image) > 1:
             raise Exception('[Impact Pack] ERROR: DetailerForEach does not allow image batches.\nPlease refer to https://github.com/ltdrdata/ComfyUI-extension-tutorials/blob/Main/ComfyUI-Impact-Pack/tutorial/batching-detailer.md for more information.')
@@ -1561,7 +1579,8 @@ class DetailerForEachTest(DetailerForEach):
             DetailerForEach.do_detail(image, segs, model, clip, vae, guide_size, guide_size_for, max_size, seed, steps,
                                       cfg, sampler_name, scheduler, positive, negative, denoise, feather, noise_mask,
                                       force_inpaint, wildcard, detailer_hook,
-                                      cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, scheduler_func_opt=scheduler_func_opt)
+                                      cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, 
+                                      scheduler_func_opt=scheduler_func_opt, tiled_encode=tiled_encode, tiled_decode=tiled_decode)
 
         # set fallback image
         if len(cropped) == 0:
@@ -1590,7 +1609,8 @@ class DetailerForEachTestPipe(DetailerForEachPipe):
 
     def doit(self, image, segs, guide_size, guide_size_for, max_size, seed, steps, cfg, sampler_name, scheduler,
              denoise, feather, noise_mask, force_inpaint, basic_pipe, wildcard, cycle=1,
-             refiner_ratio=None, detailer_hook=None, refiner_basic_pipe_opt=None, inpaint_model=False, noise_mask_feather=0, scheduler_func_opt=None):
+             refiner_ratio=None, detailer_hook=None, refiner_basic_pipe_opt=None, inpaint_model=False, noise_mask_feather=0,
+             scheduler_func_opt=None, tiled_encode=False, tiled_decode=False):
 
         if len(image) > 1:
             raise Exception('[Impact Pack] ERROR: DetailerForEach does not allow image batches.\nPlease refer to https://github.com/ltdrdata/ComfyUI-extension-tutorials/blob/Main/ComfyUI-Impact-Pack/tutorial/batching-detailer.md for more information.')
@@ -1609,7 +1629,8 @@ class DetailerForEachTestPipe(DetailerForEachPipe):
                                       refiner_ratio=refiner_ratio, refiner_model=refiner_model,
                                       refiner_clip=refiner_clip, refiner_positive=refiner_positive,
                                       refiner_negative=refiner_negative,
-                                      cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather, scheduler_func_opt=scheduler_func_opt)
+                                      cycle=cycle, inpaint_model=inpaint_model, noise_mask_feather=noise_mask_feather,
+                                      scheduler_func_opt=scheduler_func_opt, tiled_encode=tiled_encode, tiled_decode=tiled_decode)
 
         # set fallback image
         if len(cropped) == 0:

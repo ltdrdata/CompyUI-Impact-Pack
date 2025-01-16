@@ -7,6 +7,7 @@ import nodes
 from . import config
 from PIL import Image
 import comfy
+import time
 
 
 class TensorBatchBuilder:
@@ -501,15 +502,22 @@ def crop_image(image, crop_region):
     return crop_tensor4(image, crop_region)
 
 
-def to_latent_image(pixels, vae):
+def to_latent_image(pixels, vae, vae_tiled_encode=False):
     x = pixels.shape[1]
     y = pixels.shape[2]
     if pixels.shape[1] != x or pixels.shape[2] != y:
         pixels = pixels[:, :x, :y, :]
 
-    vae_encode = nodes.VAEEncode()
+    print("[Impact Pack] vae encoding...")
+    start = time.time()
+    if vae_tiled_encode:
+        encoded = nodes.VAEEncodeTiled().encode(vae, pixels, 512, overlap=64)[0] # using default settings
+        print(f"[Impact Pack] vae encoded (tiled) in {time.time() - start:.1f}s")
+    else:
+        encoded = nodes.VAEEncode().encode(vae, pixels)[0]
+        print(f"[Impact Pack] vae encoded in {time.time() - start:.1f}s")
 
-    return vae_encode.encode(vae, pixels)[0]
+    return encoded
 
 
 def empty_pil_tensor(w=64, h=64):

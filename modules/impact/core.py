@@ -244,7 +244,8 @@ def enhance_detail(image, model, clip, vae, guide_size, guide_size_for_bbox, max
                    detailer_hook=None,
                    refiner_ratio=None, refiner_model=None, refiner_clip=None, refiner_positive=None,
                    refiner_negative=None, control_net_wrapper=None, cycle=1,
-                   inpaint_model=False, noise_mask_feather=0, scheduler_func=None):
+                   inpaint_model=False, noise_mask_feather=0, scheduler_func=None,
+                   vae_tiled_encode=False, vae_tiled_decode=False):
 
     if noise_mask is not None:
         noise_mask = utils.tensor_gaussian_blur_mask(noise_mask, noise_mask_feather)
@@ -334,7 +335,7 @@ def enhance_detail(image, model, clip, vae, guide_size, guide_size_for_bbox, max
             print(f"[Impact Pack] ComfyUI is an outdated version.")
             positive, negative, latent_image = imc_encode(positive, negative, upscaled_image, vae, noise_mask)
     else:
-        latent_image = to_latent_image(upscaled_image, vae)
+        latent_image = to_latent_image(upscaled_image, vae, vae_tiled_encode=vae_tiled_encode)
         if noise_mask is not None:
             latent_image['noise_mask'] = noise_mask
 
@@ -369,12 +370,19 @@ def enhance_detail(image, model, clip, vae, guide_size, guide_size_for_bbox, max
         refined_latent = detailer_hook.pre_decode(refined_latent)
 
     # non-latent downscale - latent downscale cause bad quality
-    try:
-        # try to decode image normally
-        refined_image = vae.decode(refined_latent['samples'])
-    except Exception as e:
-        #usually an out-of-memory exception from the decode, so try a tiled approach
-        refined_image = vae.decode_tiled(refined_latent["samples"], tile_x=64, tile_y=64, )
+    print("[Impact Pack] vae decoding...")
+    start = time.time()
+    if vae_tiled_decode:
+        (refined_image,) = nodes.VAEDecodeTiled().decode(vae, refined_latent, 512) # using default settings
+        print(f"[Impact Pack] vae decoded (tiled) in {time.time() - start:.1f}s")
+    else:
+        try:
+            refined_image = vae.decode(refined_latent['samples'])
+        except Exception as e:
+            # usually an out-of-memory exception from the decode, so try a tiled approach
+            print(f"[Impact Pack] failed after {time.time() - start:.1f}s, doing vae.decode_tiled 64...")
+            refined_image = vae.decode_tiled(refined_latent["samples"], tile_x=64, tile_y=64, )
+        print(f"[Impact Pack] vae decoded in {time.time() - start:.1f}s")
 
     if detailer_hook is not None:
         refined_image = detailer_hook.post_decode(refined_image)
