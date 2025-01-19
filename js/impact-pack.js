@@ -365,7 +365,11 @@ app.registerExtension({
 					// connect input
 					if(this.inputs[0].type == '*'){
 						const node = app.graph.getNodeById(link_info.origin_id);
-						let origin_type = node.outputs[link_info.origin_slot].type;
+						let origin_type = node.outputs[link_info.origin_slot]?.type;
+
+						if(origin_type==undefined) {
+							return; // fallback
+						}
 
 						if(origin_type == '*') {
 							this.disconnectInput(link_info.target_slot);
