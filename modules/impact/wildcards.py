@@ -237,7 +237,23 @@ def process(text, seed=None):
             keyword = match.lower()
             keyword = wildcard_normalize(keyword)
             if keyword in local_wildcard_dict:
-                replacement = random_gen.choice(local_wildcard_dict[keyword])
+                # look for adjusted probability
+                adjusted_probabilities = []
+                total_prob = 0
+                options=local_wildcard_dict[keyword]
+                for option in options:
+                    parts = option.split('::', 1)
+                    if len(parts) == 2 and is_numeric_string(parts[0].strip()):
+                        config_value = float(parts[0].strip())
+                    else:
+                        config_value = 1  # Default value if no configuration is provided
+
+                    adjusted_probabilities.append(config_value)
+                    total_prob += config_value
+
+                normalized_probabilities = [prob / total_prob for prob in adjusted_probabilities]
+                selected_item = random_gen.choice(options, p=normalized_probabilities, replace=False)
+                replacement = re.sub(r'^\s*[0-9.]+::', '', selected_item, 1)
                 replacements_found = True
                 string = string.replace(f"__{match}__", replacement, 1)
             elif '*' in keyword:
