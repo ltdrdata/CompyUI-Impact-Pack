@@ -524,7 +524,7 @@ def onprompt_populate_wildcards(json_data):
             key = str(node['id'])
             if key in updated_widget_values:
                 node['widgets_values'][1] = updated_widget_values[key]
-                node['widgets_values'][2] = False
+                node['widgets_values'][2] = 'reproduce'
 
 
 def onprompt_for_remote(json_data):
