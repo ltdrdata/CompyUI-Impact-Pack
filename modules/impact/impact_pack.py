@@ -2343,7 +2343,11 @@ class ImpactWildcardProcessor:
         return {"required": {
                         "wildcard_text": ("STRING", {"multiline": True, "dynamicPrompts": False, "tooltip": "Enter a prompt using wildcard syntax."}),
                         "populated_text": ("STRING", {"multiline": True, "dynamicPrompts": False, "tooltip": "The actual value passed during the execution of 'ImpactWildcardProcessor' is what is shown here. The behavior varies slightly depending on the mode. Wildcard syntax can also be used in 'populated_text'."}),
-                        "mode": ("BOOLEAN", {"default": True, "label_on": "Populate", "label_off": "Fixed", "tooltip": "Populate: Before running the workflow, it overwrites the existing value of 'populated_text' with the prompt processed from 'wildcard_text'. In this mode, 'populated_text' cannot be edited.\nFixed: Ignores wildcard_text and keeps 'populated_text' as is. You can edit 'populated_text' in this mode."}),
+                        "mode": (["populate", "fixed", "reproduce"], {"default": "populate", "tooltip": 
+                            "populate: Before running the workflow, it overwrites the existing value of 'populated_text' with the prompt processed from 'wildcard_text'. In this mode, 'populated_text' cannot be edited.\n"
+                            "fixed: Ignores wildcard_text and keeps 'populated_text' as is. You can edit 'populated_text' in this mode.\n"
+                            "reproduce: This mode operates as 'fixed' mode only once for reproduction, and then it switches to 'populate' mode."
+                            }),
                         "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "Determines the random seed to be used for wildcard processing."}),
                         "Select to add Wildcard": (["Select the Wildcard to add to the text"],),
                     },
@@ -2352,7 +2356,7 @@ class ImpactWildcardProcessor:
     CATEGORY = "ImpactPack/Prompt"
 
     DESCRIPTION = ("The 'ImpactWildcardProcessor' processes text prompts written in wildcard syntax and outputs the processed text prompt.\n\n"
-                   "TIP: Before the workflow is executed, the processing result of 'wildcard_text' is displayed in 'populated_text', and the populated text is saved along with the workflow. If you want to use a seed converted as input, write the prompt directly in 'populated_text' instead of 'wildcard_text', and set the mode to 'Fixed'.")
+                   "TIP: Before the workflow is executed, the processing result of 'wildcard_text' is displayed in 'populated_text', and the populated text is saved along with the workflow. If you want to use a seed converted as input, write the prompt directly in 'populated_text' instead of 'wildcard_text', and set the mode to 'fixed'.")
 
     RETURN_TYPES = ("STRING", )
     FUNCTION = "doit"
@@ -2374,8 +2378,10 @@ class ImpactWildcardEncode:
                         "clip": ("CLIP",),
                         "wildcard_text": ("STRING", {"multiline": True, "dynamicPrompts": False, "tooltip": "Enter a prompt using wildcard syntax."}),
                         "populated_text": ("STRING", {"multiline": True, "dynamicPrompts": False, "tooltip": "The actual value passed during the execution of 'ImpactWildcardEncode' is what is shown here. The behavior varies slightly depending on the mode. Wildcard syntax can also be used in 'populated_text'."}),
-                        "mode": ("BOOLEAN", {"default": True, "label_on": "Populate", "label_off": "Fixed", "tooltip": "Populate: Before running the workflow, it overwrites the existing value of 'populated_text' with the prompt processed from 'wildcard_text'. In this mode, 'populated_text' cannot be edited.\n"
-                                                                                                                       "Fixed: Ignores wildcard_text and keeps 'populated_text' as is. You can edit 'populated_text' in this mode."}),
+                        "mode": (["populate", "fixed", "reproduce"], {"tooltip": 
+                            "populate: Before running the workflow, it overwrites the existing value of 'populated_text' with the prompt processed from 'wildcard_text'. In this mode, 'populated_text' cannot be edited.\n"
+                            "fixed: Ignores wildcard_text and keeps 'populated_text' as is. You can edit 'populated_text' in this mode\n."
+                            "reproduce: This mode operates as 'fixed' mode only once for reproduction, and then it switches to 'populate' mode."}),
                         "Select to add LoRA": (["Select the LoRA to add to the text"] + folder_paths.get_filename_list("loras"), ),
                         "Select to add Wildcard": (["Select the Wildcard to add to the text"], ),
                         "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "Determines the random seed to be used for wildcard processing."}),
@@ -2385,7 +2391,7 @@ class ImpactWildcardEncode:
     CATEGORY = "ImpactPack/Prompt"
 
     DESCRIPTION = ("The 'ImpactWildcardEncode' node processes text prompts written in wildcard syntax and outputs them as conditioning. It also supports LoRA syntax, with the applied LoRA reflected in the model's output.\n\n"
-                   "TIP1: Before the workflow is executed, the processing result of 'wildcard_text' is displayed in 'populated_text', and the populated text is saved along with the workflow. If you want to use a seed converted as input, write the prompt directly in 'populated_text' instead of 'wildcard_text', and set the mode to 'Fixed'.\n"
+                   "TIP1: Before the workflow is executed, the processing result of 'wildcard_text' is displayed in 'populated_text', and the populated text is saved along with the workflow. If you want to use a seed converted as input, write the prompt directly in 'populated_text' instead of 'wildcard_text', and set the mode to 'fixed'.\n"
                    "TIP2: If the 'Inspire Pack' is installed, LBW(LoRA Block Weight) syntax can also be applied.")
 
     RETURN_TYPES = ("MODEL", "CLIP", "CONDITIONING", "STRING")

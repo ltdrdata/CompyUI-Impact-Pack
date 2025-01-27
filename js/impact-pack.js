@@ -93,7 +93,7 @@ const input_dirty = {};
 const output_tracking = {};
 
 function progressExecuteHandler(event) {
-	if(event.detail.output.aux){
+	if(event.detail?.output?.aux){
 		const id = event.detail.node;
 		if(input_tracking.hasOwnProperty(id)) {
 			if(input_tracking.hasOwnProperty(id) && input_tracking[id][0] != event.detail.output.aux[0]) {
@@ -273,7 +273,7 @@ app.registerExtension({
 				}
 				else {
 					const node = app.graph.getNodeById(link_info.origin_id);
-					slot_type = node.outputs[link_info.origin_slot].type;
+					slot_type = node.outputs[link_info.origin_slot]?.type;
 				}
 
 				this.inputs[0].type = slot_type;
@@ -759,14 +759,20 @@ app.registerExtension({
 			// mode combo
 			Object.defineProperty(mode_widget, "value", {
 				set: (value) => {
-						node._mode_value = value == true || value == "Populate";
-						populated_text_widget.inputEl.disabled = value == true || value == "Populate";
+						if(value == true)
+							node._mode_value = "populate";
+						else if(value == false)
+							node._mode_value = "fixed";
+						else
+							node._mode_value = value; // combo value
+
+						populated_text_widget.inputEl.disabled = node._mode_value != 'populate';
 					},
 				get: () => {
 						if(node._mode_value != undefined)
 							return node._mode_value;
 						else
-							return true;
+							return 'populate';
 					 }
 			});
 		}

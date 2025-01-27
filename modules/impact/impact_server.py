@@ -478,7 +478,17 @@ def onprompt_populate_wildcards(json_data):
     for k, v in prompt.items():
         if 'class_type' in v and (v['class_type'] == 'ImpactWildcardEncode' or v['class_type'] == 'ImpactWildcardProcessor'):
             inputs = v['inputs']
-            if inputs['mode'] and isinstance(inputs['populated_text'], str):
+
+            # legacy adapter
+            if isinstance(inputs['mode'], bool):
+                if inputs['mode']:
+                    new_mode = 'populate'
+                else:
+                    new_mode = 'fixed'
+
+                inputs['mode'] = new_mode
+
+            if inputs['mode'] == 'populate' and isinstance(inputs['populated_text'], str):
                 if isinstance(inputs['seed'], list):
                     try:
                         input_node = prompt[inputs['seed'][0]]
@@ -499,10 +509,15 @@ def onprompt_populate_wildcards(json_data):
                     input_seed = int(inputs['seed'])
 
                 inputs['populated_text'] = wildcards.process(inputs['wildcard_text'], input_seed)
-                inputs['mode'] = False
+                inputs['mode'] = 'reproduce'
 
                 PromptServer.instance.send_sync("impact-node-feedback", {"node_id": k, "widget_name": "populated_text", "type": "STRING", "value": inputs['populated_text']})
                 updated_widget_values[k] = inputs['populated_text']
+            
+            if inputs['mode'] == 'reproduce':
+                PromptServer.instance.send_sync("impact-node-feedback", {"node_id": k, "widget_name": "mode", "type": "STRING", "value": 'populate'})
+
+
 
     if 'extra_data' in json_data and 'extra_pnginfo' in json_data['extra_data']:
         for node in json_data['extra_data']['extra_pnginfo']['workflow']['nodes']:
