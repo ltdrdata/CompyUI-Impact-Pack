@@ -44,7 +44,9 @@ def read_wildcard(k, v):
     elif isinstance(v, str):
         k = wildcard_normalize(k)
         wildcard_dict[k] = [v]
-
+    elif isinstance(v, (int, float)):
+        k = wildcard_normalize(k)
+        wildcard_dict[k] = [str(v)]
 
 def read_wildcard_dict(wildcard_path):
     global wildcard_dict
@@ -135,6 +137,8 @@ def process(text, seed=None):
                     b = r.group(3)
                     if b is not None:
                         b = b.strip()
+                    else:
+                        b = "-1"
                         
                 if r is not None:
                     if b is not None and is_numeric_string(a) and is_numeric_string(b):
@@ -145,26 +149,32 @@ def process(text, seed=None):
                         x = int(a)
                         select_range = (x, x)
 
+                    # Expand wildcard path or return the string after $$
+                    def expand_wildcard_or_return_string(options, pattern, wildcard_pattern):
+                        matches = re.findall(wildcard_pattern, pattern)
+                        if len(options) == 1 and matches:
+                            # $$<single wildcard>
+                            return get_wildcard_options(pattern)
+                        else:
+                            # $$opt1|opt2|...
+                            options[0] = pattern
+                            return options
+
                     if select_range is not None and len(multi_select_pattern) == 2:
                         # PATTERN: count$$
-                        matches = re.findall(wildcard_pattern, multi_select_pattern[1])
-                        if len(options) == 1 and matches:
-                            # count$$<single wildcard>
-                            options = get_wildcard_options(multi_select_pattern[1])
-                        else:
-                            # count$$opt1|opt2|...
-                            options[0] = multi_select_pattern[1]
+                        options = expand_wildcard_or_return_string(options, multi_select_pattern[1], wildcard_pattern )
                     elif select_range is not None and len(multi_select_pattern) == 3:
                         # PATTERN: count$$ sep $$
                         select_sep = multi_select_pattern[1]
-                        options[0] = multi_select_pattern[2]
+                        options = expand_wildcard_or_return_string(options, multi_select_pattern[2], wildcard_pattern )
 
             adjusted_probabilities = []
 
             total_prob = 0
 
             for option in options:
-                parts = option.split('::', 1)
+                parts = option.split('::', 1) if isinstance(option, str) else f"{option}".split('::', 1)
+
                 if len(parts) == 2 and is_numeric_string(parts[0].strip()):
                     config_value = float(parts[0].strip())
                 else:
@@ -178,15 +188,30 @@ def process(text, seed=None):
             if select_range is None:
                 select_count = 1
             else:
-                select_count = random_gen.integers(low=select_range[0], high=select_range[1]+1, size=1)
+                def calculate_max(_options_length, _max_select_range):
+                    return min(_max_select_range + 1, _options_length + 1) if _max_select_range > 0 else _options_length + 1
 
-            if select_count > len(options):
+                def calculate_select_count(_max_value, _min_select_range, random_gen):
+                    if max(_max_value, _min_select_range) <= 0:
+                        return 0
+                    # fix: low >= high
+                    elif _max_value == _min_select_range:
+                        return _max_value
+                    else:
+                        # fix: low >= high
+                        _low_value = min(_min_select_range, _max_value)
+                        _high_value = max(_min_select_range, _max_value)
+                        return random_gen.integers(low=_low_value, high=_high_value, size=1)
+                select_count = calculate_select_count(calculate_max(len(options), select_range[1]), select_range[0], random_gen)
+
+            if select_count > len(options) or total_prob <= 1:
                 random_gen.shuffle(options)
                 selected_items = options
             else:
                 selected_items = random_gen.choice(options, p=normalized_probabilities, size=select_count, replace=False)
 
-            selected_items2 = [re.sub(r'^\s*[0-9.]+::', '', x, 1) for x in selected_items]
+            # x may be numpy.int32, convert to string
+            selected_items2 = [re.sub(r'^\s*[0-9.]+::', '', str(x), 1) for x in selected_items]
             replacement = select_sep.join(selected_items2)
             if '::' in replacement:
                 pass
