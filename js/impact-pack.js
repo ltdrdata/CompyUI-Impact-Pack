@@ -766,7 +766,7 @@ app.registerExtension({
 						else
 							node._mode_value = value; // combo value
 
-						populated_text_widget.inputEl.disabled = node._mode_value != 'populate';
+						populated_text_widget.inputEl.disabled = node._mode_value == 'populate';
 					},
 				get: () => {
 						if(node._mode_value != undefined)
