@@ -45,6 +45,8 @@ class SEGSDetailerForAnimateDiff:
 
     CATEGORY = "ImpactPack/Detailer"
 
+    DESCRIPTION = "This node enhances details by inpainting each region within the detected area bundle (SEGS) after enlarging them based on the guide size.\nThis node is applied specifically to SEGS rather than the entire image. To apply it to the entire image, use the 'SEGS Paste' node.\nAs a specialized detailer node for improving video details, such as in AnimateDiff, this node can handle cases where the masks contained in SEGS serve as batch masks spanning multiple frames."
+
     @staticmethod
     def do_detail(image_frames, segs, guide_size, guide_size_for, max_size, seed, steps, cfg, sampler_name, scheduler,
                   denoise, basic_pipe, refiner_ratio=None, refiner_basic_pipe_opt=None, noise_mask_feather=0, scheduler_func_opt=None):
@@ -165,6 +167,8 @@ class DetailerForEachPipeForAnimateDiff:
     FUNCTION = "doit"
 
     CATEGORY = "ImpactPack/Detailer"
+
+    DESCRIPTION = "This node enhances details by inpainting each region within the detected area bundle (SEGS) after enlarging them based on the guide size.\nThis node is a specialized detailer node for enhancing video details, such as in AnimateDiff. It can handle cases where the masks contained in SEGS serve as batch masks spanning multiple frames."
 
     @staticmethod
     def doit(image_frames, segs, guide_size, guide_size_for, max_size, seed, steps, cfg, sampler_name, scheduler,

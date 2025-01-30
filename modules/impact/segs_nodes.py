@@ -60,6 +60,8 @@ class SEGSDetailer:
 
     CATEGORY = "ImpactPack/Detailer"
 
+    DESCRIPTION = "This node enhances details by inpainting each region within the detected area bundle (SEGS) after enlarging them based on the guide size.\nThis node is applied specifically to SEGS rather than the entire image. To apply it to the entire image, use the 'SEGS Paste' node."
+
     @staticmethod
     def do_detail(image, segs, guide_size, guide_size_for, max_size, seed, steps, cfg, sampler_name, scheduler,
                   denoise, noise_mask, force_inpaint, basic_pipe, refiner_ratio=None, batch_size=1, cycle=1,
@@ -173,6 +175,8 @@ class SEGSPaste:
     FUNCTION = "doit"
 
     CATEGORY = "ImpactPack/Detailer"
+
+    DESCRIPTION = "This node provides a function to paste the enhanced SEGS, improved through the SEGS detailer, back onto the original image."
 
     @staticmethod
     def doit(image, segs, feather, alpha=255, ref_image_opt=None):
@@ -1486,6 +1490,8 @@ class SEGSPicker:
 
     CATEGORY = "ImpactPack/Util"
 
+    DESCRIPTION = "This node provides a function to select only the chosen SEGS from the input SEGS."
+
     @staticmethod
     def doit(picks, segs, fallback_image_opt=None, unique_id=None):
         if fallback_image_opt is not None:
@@ -1541,6 +1547,8 @@ class DefaultImageForSEGS:
     FUNCTION = "doit"
 
     CATEGORY = "ImpactPack/Util"
+
+    DESCRIPTION = "If the SEGS have not passed through the detailer, they contain only detection area information without an image. This node sets a default image for the SEGS."
 
     @staticmethod
     def doit(segs, image, override):

@@ -228,6 +228,8 @@ class DetailerForEach:
 
     CATEGORY = "ImpactPack/Detailer"
 
+    DESCRIPTION = "It enhances details by inpainting each region within the detected area bundle (SEGS) after enlarging them based on the guide size."
+
     @staticmethod
     def get_core_module():
         return core
@@ -442,6 +444,8 @@ class DetailerForEachPipe:
 
     CATEGORY = "ImpactPack/Detailer"
 
+    DESCRIPTION = DetailerForEach.DESCRIPTION
+
     def doit(self, image, segs, guide_size, guide_size_for, max_size, seed, steps, cfg, sampler_name, scheduler,
              denoise, feather, noise_mask, force_inpaint, basic_pipe, wildcard,
              refiner_ratio=None, detailer_hook=None, refiner_basic_pipe_opt=None,
@@ -532,6 +536,8 @@ class FaceDetailer:
     FUNCTION = "doit"
 
     CATEGORY = "ImpactPack/Simple"
+
+    DESCRIPTION = "This node enhances details by automatically detecting specific objects in the input image using detection models (bbox, segm, sam) and regenerating the image by enlarging the detected area based on the guide size.\nAlthough this node is specialized to simplify the commonly used facial detail enhancement workflow, it can also be used for various automatic inpainting purposes depending on the detection model."
 
     @staticmethod
     def enhance_face(image, model, clip, vae, guide_size, guide_size_for_bbox, max_size, seed, steps, cfg, sampler_name, scheduler,
@@ -1407,6 +1413,8 @@ class FaceDetailerPipe:
 
     CATEGORY = "ImpactPack/Simple"
 
+    DESCRIPTION = FaceDetailer.DESCRIPTION
+
     def doit(self, image, detailer_pipe, guide_size, guide_size_for, max_size, seed, steps, cfg, sampler_name, scheduler,
              denoise, feather, noise_mask, force_inpaint, bbox_threshold, bbox_dilation, bbox_crop_factor,
              sam_detection_hint, sam_dilation, sam_threshold, sam_bbox_expansion,
@@ -1501,6 +1509,8 @@ class MaskDetailerPipe:
     FUNCTION = "doit"
 
     CATEGORY = "ImpactPack/Detailer"
+
+    DESCRIPTION = ""
 
     def doit(self, image, mask, basic_pipe, guide_size, guide_size_for, max_size, mask_mode,
              seed, steps, cfg, sampler_name, scheduler, denoise,
@@ -1606,6 +1616,8 @@ class DetailerForEachTestPipe(DetailerForEachPipe):
     FUNCTION = "doit"
 
     CATEGORY = "ImpactPack/Detailer"
+
+    DESCRIPTION = DetailerForEach.DESCRIPTION
 
     def doit(self, image, segs, guide_size, guide_size_for, max_size, seed, steps, cfg, sampler_name, scheduler,
              denoise, feather, noise_mask, force_inpaint, basic_pipe, wildcard, cycle=1,
@@ -2343,7 +2355,7 @@ class ImpactWildcardProcessor:
         return {"required": {
                         "wildcard_text": ("STRING", {"multiline": True, "dynamicPrompts": False, "tooltip": "Enter a prompt using wildcard syntax."}),
                         "populated_text": ("STRING", {"multiline": True, "dynamicPrompts": False, "tooltip": "The actual value passed during the execution of 'ImpactWildcardProcessor' is what is shown here. The behavior varies slightly depending on the mode. Wildcard syntax can also be used in 'populated_text'."}),
-                        "mode": (["populate", "fixed", "reproduce"], {"default": "populate", "tooltip": 
+                        "mode": (["populate", "fixed", "reproduce"], {"default": "populate", "tooltip":
                             "populate: Before running the workflow, it overwrites the existing value of 'populated_text' with the prompt processed from 'wildcard_text'. In this mode, 'populated_text' cannot be edited.\n"
                             "fixed: Ignores wildcard_text and keeps 'populated_text' as is. You can edit 'populated_text' in this mode.\n"
                             "reproduce: This mode operates as 'fixed' mode only once for reproduction, and then it switches to 'populate' mode."
@@ -2359,6 +2371,7 @@ class ImpactWildcardProcessor:
                    "TIP: Before the workflow is executed, the processing result of 'wildcard_text' is displayed in 'populated_text', and the populated text is saved along with the workflow. If you want to use a seed converted as input, write the prompt directly in 'populated_text' instead of 'wildcard_text', and set the mode to 'fixed'.")
 
     RETURN_TYPES = ("STRING", )
+    RETURN_NAMES = ("processed text",)
     FUNCTION = "doit"
 
     @staticmethod
