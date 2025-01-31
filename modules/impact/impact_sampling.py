@@ -46,65 +46,27 @@ def get_noise_sampler(x, cpu, total_sigmas, **kwargs):
 
 
 def ksampler(sampler_name, total_sigmas, extra_options={}, inpaint_options={}):
-    if sampler_name == "dpmpp_sde":
-        def sample_dpmpp_sde(model, x, sigmas, **kwargs):
-            noise_sampler = get_noise_sampler(x, True, total_sigmas, **kwargs)
-            if noise_sampler is not None:
-                kwargs['noise_sampler'] = noise_sampler
+    if sampler_name in ["dpmpp_sde", "dpmpp_sde_gpu", "dpmpp_2m_sde", "dpmpp_2m_sde_gpu", "dpmpp_3m_sde", "dpmpp_3m_sde_gpu"]:
+        if sampler_name == "dpmpp_sde":
+            orig_sampler_function = k_diffusion_sampling.sample_dpmpp_sde
+        elif sampler_name == "dpmpp_sde_gpu":
+            orig_sampler_function = k_diffusion_sampling.sample_dpmpp_sde_gpu
+        elif sampler_name == "dpmpp_2m_sde":
+            orig_sampler_function = k_diffusion_sampling.sample_dpmpp_2m_sde
+        elif sampler_name == "dpmpp_2m_sde_gpu":
+            orig_sampler_function = k_diffusion_sampling.sample_dpmpp_2m_sde_gpu
+        elif sampler_name == "dpmpp_3m_sde":
+            orig_sampler_function = k_diffusion_sampling.sample_dpmpp_3m_sde
+        elif sampler_name == "dpmpp_3m_sde_gpu":
+            orig_sampler_function = k_diffusion_sampling.sample_dpmpp_3m_sde_gpu
 
-            return k_diffusion_sampling.sample_dpmpp_sde(model, x, sigmas, **kwargs)
+        def sampler_function_wrapper(model, x, sigmas, **kwargs):
+            if 'noise_sampler' not in kwargs:
+                kwargs['noise_sampler'] = get_noise_sampler(x, 'gpu' not in sampler_name, total_sigmas, **kwargs)
 
-        sampler_function = sample_dpmpp_sde
+            return orig_sampler_function(model, x, sigmas, **kwargs)
 
-    elif sampler_name == "dpmpp_sde_gpu":
-        def sample_dpmpp_sde(model, x, sigmas, **kwargs):
-            noise_sampler = get_noise_sampler(x, False, total_sigmas, **kwargs)
-            if noise_sampler is not None:
-                kwargs['noise_sampler'] = noise_sampler
-
-            return k_diffusion_sampling.sample_dpmpp_sde_gpu(model, x, sigmas, **kwargs)
-
-        sampler_function = sample_dpmpp_sde
-
-    elif sampler_name == "dpmpp_2m_sde":
-        def sample_dpmpp_sde(model, x, sigmas, **kwargs):
-            noise_sampler = get_noise_sampler(x, True, total_sigmas, **kwargs)
-            if noise_sampler is not None:
-                kwargs['noise_sampler'] = noise_sampler
-
-            return k_diffusion_sampling.sample_dpmpp_2m_sde(model, x, sigmas, **kwargs)
-
-        sampler_function = sample_dpmpp_sde
-
-    elif sampler_name == "dpmpp_2m_sde_gpu":
-        def sample_dpmpp_sde(model, x, sigmas, **kwargs):
-            noise_sampler = get_noise_sampler(x, False, total_sigmas, **kwargs)
-            if noise_sampler is not None:
-                kwargs['noise_sampler'] = noise_sampler
-
-            return k_diffusion_sampling.sample_dpmpp_2m_sde_gpu(model, x, sigmas, **kwargs)
-
-        sampler_function = sample_dpmpp_sde
-
-    elif sampler_name == "dpmpp_3m_sde":
-        def sample_dpmpp_sde(model, x, sigmas, **kwargs):
-            noise_sampler = get_noise_sampler(x, True, total_sigmas, **kwargs)
-            if noise_sampler is not None:
-                kwargs['noise_sampler'] = noise_sampler
-
-            return k_diffusion_sampling.sample_dpmpp_3m_sde(model, x, sigmas, **kwargs)
-
-        sampler_function = sample_dpmpp_sde
-
-    elif sampler_name == "dpmpp_3m_sde_gpu":
-        def sample_dpmpp_sde(model, x, sigmas, **kwargs):
-            noise_sampler = get_noise_sampler(x, False, total_sigmas, **kwargs)
-            if noise_sampler is not None:
-                kwargs['noise_sampler'] = noise_sampler
-
-            return k_diffusion_sampling.sample_dpmpp_3m_sde_gpu(model, x, sigmas, **kwargs)
-
-        sampler_function = sample_dpmpp_sde
+        sampler_function = sampler_function_wrapper
 
     else:
         return comfy.samplers.sampler_object(sampler_name)
