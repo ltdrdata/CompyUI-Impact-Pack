@@ -32,6 +32,31 @@ NOTE: The UltralyticsDetectorProvider node is not part of the ComfyUI-Impact-Pac
 * With the addition of wildcard support in FaceDetailer, the structure of DETAILER_PIPE-related nodes and Detailer nodes has changed. There may be malfunctions when using the existing workflow.
 
 
+## How To Install
+
+### **Recommended**
+* Install via [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager).
+
+### **Manual**
+* Navigate to `ComfyUI/custom_nodes` in your terminal (cmd).
+* Clone the repository under the `custom_nodes` directory using the following command:
+  ```
+  git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack comfyui-impact-pack
+  cd comfyui-impact-pack
+  ```
+* Install dependencies in your Python environment.
+    * For Windows Portable, run the following command inside `ComfyUI\custom_nodes\comfyui-impact-pack`:
+        ```
+        ..\..\..\python_embeded\python.exe -m pip install -r requirements.txt
+        ```
+    * If using venv or conda, activate your Python environment first, then run:
+        ```
+        pip install -r requirements.txt
+        ```
+
+### Companion Pack
+* If you need the `Ultralytics Detector Provider` to use various YOLO detection models, you should also install [ComfyUI-Impact-Subpack](https://github.com/ltdrdata/ComfyUI-Impact-Subpack).
+
 ## Custom Nodes
 ### [Detector nodes](https://github.com/ltdrdata/ComfyUI-extension-tutorials/blob/Main/ComfyUI-Impact-Pack/tutorial/detectors.md)
   * `SAMLoader` - Loads the SAM model.
